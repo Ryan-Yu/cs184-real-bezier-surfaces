@@ -27,6 +27,7 @@
 
 #include "Eigen/Geometry"
 
+#include "Triangle.h"
 #include "BezierPatch.h"
 
 inline float sqr(float x) { return x*x; }
@@ -160,15 +161,52 @@ void circle(float centerX, float centerY, float radius) {
 //***************************************************
 void myDisplay() {
 
-	glClear(GL_COLOR_BUFFER_BIT);				// clear the color buffer
+	// clear the color buffer
+	glClear(GL_COLOR_BUFFER_BIT);
 
-	glMatrixMode(GL_MODELVIEW);			        // indicate we are specifying camera transformations
-	glLoadIdentity();				        // make sure transformation is "zero'd"
+	glMatrixMode(GL_PROJECTION);
 
+	// make sure transformation is "zero'd"
+	glLoadIdentity();
 
-	// Start drawing
-	// Ensure that the diameter of the circle is 90% of min(width, height)
-	circle(viewport.w / 2.0 , viewport.h / 2.0 , min(viewport.w, viewport.h) * 0.45);
+	float aspect_ratio = ((float) viewport.w) / ((float) viewport.h);
+
+	// set OpenGL viewport
+	glViewport(0, 0, viewport.w, viewport.h);
+
+	// TODO: Set OpenGL perspective
+//	gluPerspective(FIELD_OF_VIEW * ZOOM_AMOUNT, aspect_ratio, z_near, z_far);
+
+	// set shading of model to smooth or flat, based on our global variable
+	if (SMOOTH_SHADING) {
+		glShadeModel(GL_SMOOTH);
+	} else {
+		glShadeModel(GL_FLAT);
+	}
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	// TODO: Set camera
+	// gluLookAt();
+
+	// TODO: Set translate and rotate
+	// glPushMatrix();
+	// glTranslatef();
+	// glRotatef();
+	// glRotatef();
+
+	/*
+	Begin drawing all of the triangles
+	PSUEDOCODE:
+
+	for each BezierPatch in the scene's list of Bezier patches:
+		for each Triangle in the current Bezier patch's list of triangles
+			Grab the three vertices of the triangle and render the triangle
+
+	*/
+
+	glPopMatrix();
 
 	glFlush();
 	glutSwapBuffers();					// swap buffers (we earlier set double buffer)
