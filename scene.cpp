@@ -258,7 +258,7 @@ void printCommandLineOptionVariables( )
 
 
 //****************************************************
-// TODO: method that populates each BezierPatch's list of DifferentialGeometries
+// Method that populates each BezierPatch's list of DifferentialGeometries
 // and list of Triangles, based on what kind of subdivision (i.e. adaptive or uniform)
 // we are performing
 //***************************************************

@@ -37,10 +37,20 @@ class BezierPatch {
 		listOfDifferentialGeometries.push_back(DifferentialGeometry(position, normal, uvValues));
 	}
 
+
+	//****************************************************
+	// TODO: Method that populates each BezierPatch's list of DifferentialGeometries
+	// and list of Triangles, based on adaptive subdivision
+	//***************************************************
 	void performAdaptiveSubdivision(float error) {
 
 	}
 
+
+	//****************************************************
+	// TODO: Method that populates each BezierPatch's list of DifferentialGeometries
+	// and list of Triangles, based on uniform subdivision
+	//***************************************************
 	void performUniformSubdivision(float stepSize) {
 
 	}
