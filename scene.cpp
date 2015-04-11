@@ -429,9 +429,67 @@ void parseCommandLineOptions(int argc, char *argv[])
 //****************************************************
 // TODO: Initializes the camera's vector instance variables,
 // based on each BezierPatch's DifferentialGeometry objects
+//
+// NOTE: This method MUST be called AFTER all Bezier objects and their
+//       DifferentialGeometry / Triangle lists are finished being initialized
 //****************************************************
 void initializeCamera() {
+	// First, we iterate through all of the objects in our scene and we determine the minimum and maximum x, y, z values over all objects
 
+	float xMin, xMax, yMin, yMax, zMin, zMax;
+
+	xMin = yMin = zMin = numeric_limits<int>::max();
+	xMax = yMax = zMax = numeric_limits<int>::min();
+
+	// Iterate through all BezierPatches...
+	for (std::vector<BezierPatch>::size_type i = 0; i < listOfBezierPatches; i++) {
+		BezierPatch currentBezierPatch = listOfBezierPatches[i];
+
+		// Iterate through each BezierPatch's DifferentialGeometries...
+		for (std::vector<DifferentialGeometry>::size_type j = 0; j < currentBezierPatch.listOfDifferentialGeometries; j++) {
+			Eigen::Vector3f currentDifferentialGeometryPosition = currentBezierPatch.listOfDifferentialGeometries[j].position;
+
+			// Update min's, if applicable
+			if (currentDifferentialGeometryPosition.x() < xMin) {
+				xMin = currentDifferentialGeometryPosition.x();
+			}
+			if (currentDifferentialGeometryPosition.y() < yMin) {
+				yMin = currentDifferentialGeometryPosition.y();
+			}
+			if (currentDifferentialGeometryPosition.z() < zMin) {
+				zMin = currentDifferentialGeometryPosition.z();
+			}
+
+			// Update max's, if applicable
+			if (currentDifferentialGeometryPosition.x() > xMax) {
+				xMax = currentDifferentialGeometryPosition.x();
+			}
+			if (currentDifferentialGeometryPosition.y() > yMax) {
+				yMax = currentDifferentialGeometryPosition.y();
+			}
+			if (currentDifferentialGeometryPosition.z() > zMax) {
+				zMax = currentDifferentialGeometryPosition.z();
+			}
+
+		}
+	}
+
+	// At this point, xMin, xMax, yMin, yMax, zMin, zMax are initialized, and form a box that has dimensions
+	// (xMax - xMin)  x  (yMax - yMin)  x  (zMax - zMin)
+	float xLength = xMax - xMin;
+	float yLength = yMax - yMin;
+	float zLength = zMax - zMin;
+
+	// First, we find the CENTER of our x/y/z min/max values, and this becomes our camera's lookAt vector
+	Eigen::Vector3f center((xMin + xMax) / 2.0f, (yMin + yMax) / 2.0f, (zMin + zMax) / 2.0f);
+	camera.lookAt = center;
+
+	// Set the camera's position to (x, y) = (0, 0). The z-coordinate is the length of the largest coordinate
+	// between xLength, yLength, zLength as defined above, so that the object will always be visible in the scope of the camera's lens
+	camera.position = Eigen::Vector3f(0.0, 0.0, 2.0f * fmax(zLength, fmax(xLength, yLength)));
+
+	// Hardcode camera up vector to (0, 1, 0)
+	camera.up = Eigen::Vector3f(0, 1.0f, 0);
 }
 
 
