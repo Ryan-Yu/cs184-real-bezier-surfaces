@@ -59,6 +59,7 @@ string subdivisionMethod;
 float subdivisionParameter;
 int numberOfBezierPatches;
 vector<BezierPatch> listOfBezierPatches;
+vector<Eigen::Vector3f> COLOR_ARRAY;
 
 // ***** Display-related global variables ***** //
 
@@ -77,7 +78,37 @@ bool debug;
 //****************************************************
 void initScene(){
 
-	// Nothing to do here for this simple example.
+	// Hard code various diffuse and specular constants
+	// NOTE: Probably should change this, I copied it from online...
+	COLOR_ARRAY.push_back( Eigen::Vector3f( 0.5, 0.0, 0.7 ));
+	COLOR_ARRAY.push_back( Eigen::Vector3f( 0.0, 0.7, 0.7 ));
+	COLOR_ARRAY.push_back( Eigen::Vector3f( 0.5, 0.5, 0.0 ));
+	COLOR_ARRAY.push_back( Eigen::Vector3f( 0.0, 0.2, 0.9 ));
+	COLOR_ARRAY.push_back( Eigen::Vector3f( 0.5, 0.9, 0.0 ));
+	COLOR_ARRAY.push_back( Eigen::Vector3f( 0.7, 0.7, 0.7 ));
+
+	SMOOTH_SHADING = true;
+	WIREFRAME_MODE = false;
+
+	// Add light and specify material properties
+	GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
+	GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+	GLfloat mat_diffuse[] = { 0.5, 0.0, 0.7, 1.0 };
+	GLfloat mat_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
+	GLfloat mat_shininess[] = { 20.0 };
+	glShadeModel(GL_SMOOTH);
+
+	glClearColor (0.0, 0.0, 0.0, 0.0);
+
+	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+	glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_DEPTH_TEST);
 
 }
 
@@ -90,9 +121,13 @@ void myReshape(int w, int h) {
 	viewport.h = h;
 
 	glViewport (0,0,viewport.w,viewport.h);
+
+	float aspect_ratio = ((float) viewport.w) / ((float) viewport.h);
+
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(0, viewport.w, 0, viewport.h);
+
+	gluPerspective(camera.FIELD_OF_VIEW * camera.ZOOM_AMOUNT, aspect_ratio, camera.zNear, camera.zFar);
 
 }
 
@@ -486,6 +521,7 @@ void initializeCamera() {
 	float xLength = xMax - xMin;
 	float yLength = yMax - yMin;
 	float zLength = zMax - zMin;
+	float largestLength = fmax(zLength, fmax(xLength, yLength));
 
 	// First, we find the CENTER of our x/y/z min/max values, and this becomes our camera's lookAt vector
 	Eigen::Vector3f center((xMin + xMax) / 2.0f, (yMin + yMax) / 2.0f, (zMin + zMax) / 2.0f);
@@ -493,10 +529,15 @@ void initializeCamera() {
 
 	// Set the camera's position to (x, y) = (0, 0). The z-coordinate is the length of the largest coordinate
 	// between xLength, yLength, zLength as defined above, so that the object will always be visible in the scope of the camera's lens
-	camera.position = Eigen::Vector3f(0.0, 0.0, 2.0f * fmax(zLength, fmax(xLength, yLength)));
+	camera.position = Eigen::Vector3f(0.0, 0.0, 2.0f * largestLength);
 
 	// Hardcode camera up vector to (0, 1, 0)
 	camera.up = Eigen::Vector3f(0, 1.0f, 0);
+
+	camera.zNear = 1.0f;
+
+	// TODO: Change the multiple to 10.0?
+	camera.zFar = camera.zNear + (5.0f * largestLength);
 }
 
 
