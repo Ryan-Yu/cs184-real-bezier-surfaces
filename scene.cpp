@@ -117,8 +117,10 @@ void myDisplay() {
 	// set OpenGL viewport
 	glViewport(0, 0, viewport.w, viewport.h);
 
-	// TODO: Set OpenGL perspective
-//	gluPerspective(FIELD_OF_VIEW * ZOOM_AMOUNT, aspect_ratio, z_near, z_far);
+	// TODO: Set OpenGL perspective:
+	// void gluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar);
+
+	gluPerspective(camera.FIELD_OF_VIEW * camera.ZOOM_AMOUNT, aspect_ratio, camera.zNear, camera.zFar);
 
 	// set shading of model to smooth or flat, based on our global variable
 	if (SMOOTH_SHADING) {
