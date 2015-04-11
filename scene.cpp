@@ -97,66 +97,6 @@ void myReshape(int w, int h) {
 
 
 //****************************************************
-// A routine to set a pixel by drawing a GL point.  This is not a
-// general purpose routine as it assumes a lot of stuff specific to
-// this example.
-//****************************************************
-
-void setPixel(int x, int y, GLfloat r, GLfloat g, GLfloat b) {
-	glColor3f(r, g, b);
-	glVertex2f(x + 0.5, y + 0.5);   // The 0.5 is to target pixel
-	// centers
-	// Note: Need to check for gap
-	// bug on inst machines.
-}
-
-
-
-//****************************************************
-// Draw a filled circle.  
-//****************************************************
-
-// For viewport of [400 x 400], center X = 200, center Y = 200
-void circle(float centerX, float centerY, float radius) {
-
-	// Draw inner circle
-	glBegin(GL_POINTS);
-
-	int i,j;  // Pixel indices
-
-	int minI = max(0,(int)floor(centerX-radius));
-	int maxI = min(viewport.w-1,(int)ceil(centerX+radius));
-
-	int minJ = max(0,(int)floor(centerY-radius));
-	int maxJ = min(viewport.h-1,(int)ceil(centerY+radius));
-
-	for (i=0;i<viewport.w;i++) {
-		for (j=0;j<viewport.h;j++) {
-
-			// Location of the center of pixel relative to center of sphere
-			float x = (i+0.5-centerX);
-			float y = (j+0.5-centerY);
-
-			float dist = sqrt(sqr(x) + sqr(y));
-
-			// if current pixel (i, j) is inside the bounds of the circle
-			if (dist<=radius) {
-
-				// This is the front-facing Z coordinate
-				float z = sqrt(radius*radius-dist*dist);
-
-				// setPixel(i,j, resultant_rgb_sum_of_pixel_r, resultant_rgb_sum_of_pixel_g, resultant_rgb_sum_of_pixel_b);
-			}
-
-		}
-	}
-
-	glEnd();
-}
-
-
-
-//****************************************************
 // function that does the actual drawing of stuff
 //***************************************************
 void myDisplay() {
