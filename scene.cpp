@@ -56,6 +56,14 @@ float subdivisionParameter;
 int numberOfBezierPatches;
 vector<BezierPatch> listOfBezierPatches;
 
+// Display-related global variables
+
+// if false, then in flat shading mode
+bool SMOOTH_SHADING;
+
+// if false, then in filled mode
+bool WIREFRAME_MODE;
+
 bool debug;
 
 
@@ -209,9 +217,23 @@ void printCommandLineOptionVariables( )
 				for (std::vector<Eigen::Vector3f>::size_type k = 0; k < listOfPointsForCurrentCurve.size(); k++) {
 					printf("    (%f, %f, %f)\n", listOfPointsForCurrentCurve[k].x(), listOfPointsForCurrentCurve[k].y(), listOfPointsForCurrentCurve[k].z());
 				}
-				cout << "\n";
+				cout << "\n\n";
 			}
 		}
+
+		cout << "Display options:\n";
+		if (SMOOTH_SHADING) {
+			cout << "  Smooth shading is ON.\n";
+		} else {
+			cout << "  Flat shading is ON. (i.e. smooth shading is OFF)\n";
+		}
+
+		if (WIREFRAME_MODE) {
+			cout << "  Wireframe mode is ON.\n";
+		} else {
+			cout << "  Filled mode is ON. (i.e. Wireframe mode is OFF)\n";
+		}
+
 	}
 }
 
