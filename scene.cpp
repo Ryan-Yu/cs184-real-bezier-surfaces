@@ -179,14 +179,46 @@ void myDisplay() {
 //****************************************************
 // function that assists with exit of program on space bar press
 //***************************************************
-void exitOnSpaceBarPress( unsigned char key, int x, int y )
+void keyPressed( unsigned char key, int x, int y )
 {
 	switch ( key )
 	{
-	// Space bar
+	// Space bar: exit program
 	case ' ':
 		exit(1);
+
+	case 's':
+		// Toggle between flat and smooth shading, but only if we aren't in wireframe mode
+		if (!WIREFRAME_MODE) {
+			SMOOTH_SHADING = !SMOOTH_SHADING;
+			if (debug) {
+				if (SMOOTH_SHADING) {
+					cout << "Turned smooth shading ON.\n";
+				} else {
+					cout << "Turned smooth shading OFF.\n";
+				}
+			}
+		}
+		break;
+
+	case 'w':
+		// Toggle between wireframe mode and filled mode
+		WIREFRAME_MODE = !WIREFRAME_MODE;
+		if (debug) {
+			if (WIREFRAME_MODE) {
+				cout << "Turned wireframe mode ON.\n";
+			} else {
+				cout << "Turned wireframe mode OFF.\n";
+			}
+		}
+		break;
+
 	}
+
+	// TODO: arrow keys = object rotated
+	// TODO: shift + arrow keys = object translated (need to use special key for this, probably)
+	// TODO: +/- keys = zoom in/out
+
 }
 
 
@@ -458,8 +490,8 @@ int main(int argc, char *argv[]) {
 	glutDisplayFunc(myDisplay);				// function to run when its time to draw something
 	glutReshapeFunc(myReshape);				// function to run when the window gets resized
 
-	// Program exits if space bar is pressed
-	glutKeyboardFunc( exitOnSpaceBarPress );
+	// Handles key presses
+	glutKeyboardFunc( keyPressed );
 
 	glutMainLoop();							// infinite loop that will keep drawing and resizing
 	// and whatever else
