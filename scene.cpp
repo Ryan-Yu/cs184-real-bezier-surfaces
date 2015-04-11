@@ -27,6 +27,7 @@
 
 #include "Eigen/Geometry"
 
+#include "DifferentialGeometry.h"
 #include "Triangle.h"
 #include "BezierPatch.h"
 

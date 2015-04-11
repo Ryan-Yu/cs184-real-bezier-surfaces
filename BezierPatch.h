@@ -12,6 +12,12 @@ class BezierPatch {
 	public:
 		std::vector<std::vector <Eigen::Vector3f> > listOfCurves;
 
+		// final list of subdivided triangles, ready to feed to OpenGL display system
+		std::vector<Triangle> listOfTriangles;
+
+		// list of differential geometries (i.e. points) that we are evaluating the given patch at
+		std::vector<DifferentialGeometry> listOfDifferentialGeometries;
+
 	BezierPatch() {
 
 	}
