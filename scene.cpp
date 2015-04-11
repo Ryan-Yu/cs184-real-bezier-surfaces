@@ -52,6 +52,7 @@ public:
 //****************************************************
 // Global Variables
 //****************************************************
+Camera camera;
 Viewport viewport;
 string bezFilename;
 string subdivisionMethod;
@@ -59,7 +60,7 @@ float subdivisionParameter;
 int numberOfBezierPatches;
 vector<BezierPatch> listOfBezierPatches;
 
-// Display-related global variables
+// ***** Display-related global variables ***** //
 
 // if false, then in flat shading mode
 bool SMOOTH_SHADING;
@@ -129,8 +130,11 @@ void myDisplay() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// TODO: Set camera
-	// gluLookAt();
+	// Set camera, via the following:
+	// void gluLookAt(GLdouble eyeX, GLdouble eyeY, GLdouble eyeZ, GLdouble centerX, GLdouble centerY,
+	//                GLdouble centerZ, GLdouble upX, GLdouble upY, GLdouble upZ);
+	gluLookAt(camera.position.x(), camera.position.y(), camera.position.z(), camera.lookAt.x(), camera.lookAt.y(),
+			camera.lookAt.z(), camera.up.x(), camera.up.y(), camera.up.z());
 
 	// TODO: Set translate and rotate
 	// glPushMatrix();
@@ -252,7 +256,7 @@ void printCommandLineOptionVariables( )
 
 
 //****************************************************
-// method that populates each BezierPatch's list of DifferentialGeometries
+// TODO: method that populates each BezierPatch's list of DifferentialGeometries
 // and list of Triangles, based on what kind of subdivision (i.e. adaptive or uniform)
 // we are performing
 //***************************************************
@@ -421,6 +425,17 @@ void parseCommandLineOptions(int argc, char *argv[])
 
 
 //****************************************************
+// TODO: Initializes the camera's vector instance variables,
+// based on each BezierPatch's DifferentialGeometry objects
+//****************************************************
+void initializeCamera() {
+
+}
+
+
+
+
+//****************************************************
 // psuedocode for... everything
 //****************************************************
 
@@ -474,6 +489,11 @@ int main(int argc, char *argv[]) {
 	// Parse command line options
 	parseCommandLineOptions(argc, argv);
 	printCommandLineOptionVariables();
+
+	// At this point, all subdivision of Bezier Patches has been completed
+
+	// Initialize position, lookAt, and up vectors of camera so that we may feed them into OpenGL rendering system later
+	initializeCamera();
 
 	//This tells glut to use a double-buffered window with red, green, and blue channels
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
