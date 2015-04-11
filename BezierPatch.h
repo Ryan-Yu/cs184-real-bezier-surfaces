@@ -36,6 +36,14 @@ class BezierPatch {
 	void addDifferentialGeometry(Eigen::Vector3f position, Eigen::Vector3f normal, Eigen::Vector2f uvValues) {
 		listOfDifferentialGeometries.push_back(DifferentialGeometry(position, normal, uvValues));
 	}
+
+	void performAdaptiveSubdivision(float error) {
+
+	}
+
+	void performUniformSubdivision(float stepSize) {
+
+	}
 };
 
 #endif /* BEZIERPATCH_H_ */

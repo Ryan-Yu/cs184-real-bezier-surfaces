@@ -215,7 +215,7 @@ void printCommandLineOptionVariables( )
 {
 	if (debug)
 	{
-		cout << "Bezier file: " << bezFilename << "\n";
+		cout << "\nBezier file: " << bezFilename << "\n";
 		cout << "Subdivision Parameter: " << subdivisionParameter << "\n";
 		cout << "Subdivision Method: " << subdivisionMethod << "\n\n";
 
@@ -263,6 +263,15 @@ void printCommandLineOptionVariables( )
 // we are performing
 //***************************************************
 void perform_subdivision(bool adaptive_subdivision) {
+	// Iterate through each of the Bezier patches...
+	for (std::vector<BezierPatch>::size_type i = 0; i < listOfBezierPatches.size(); i++) {
+		BezierPatch currentBezierPatch = listOfBezierPatches[i];
+		if (adaptive_subdivision) {
+			currentBezierPatch.performAdaptiveSubdivision(subdivisionParameter);
+		} else {
+			currentBezierPatch.performUniformSubdivision(subdivisionParameter);
+		}
+	}
 
 }
 
@@ -333,8 +342,6 @@ void parseBezierFile(string filename) {
 			i++;
 			continue;
 		}
-
-		cout << str << "\n";
 
 		istringstream iss(str);
 		// Iterate through words on a single line...
@@ -427,7 +434,7 @@ void parseCommandLineOptions(int argc, char *argv[])
 
 
 //****************************************************
-// TODO: Initializes the camera's vector instance variables,
+// Initializes the camera's vector instance variables,
 // based on each BezierPatch's DifferentialGeometry objects
 //
 // NOTE: This method MUST be called AFTER all Bezier objects and their
@@ -442,11 +449,11 @@ void initializeCamera() {
 	xMax = yMax = zMax = numeric_limits<int>::min();
 
 	// Iterate through all BezierPatches...
-	for (std::vector<BezierPatch>::size_type i = 0; i < listOfBezierPatches; i++) {
+	for (std::vector<BezierPatch>::size_type i = 0; i < listOfBezierPatches.size(); i++) {
 		BezierPatch currentBezierPatch = listOfBezierPatches[i];
 
 		// Iterate through each BezierPatch's DifferentialGeometries...
-		for (std::vector<DifferentialGeometry>::size_type j = 0; j < currentBezierPatch.listOfDifferentialGeometries; j++) {
+		for (std::vector<DifferentialGeometry>::size_type j = 0; j < currentBezierPatch.listOfDifferentialGeometries.size(); j++) {
 			Eigen::Vector3f currentDifferentialGeometryPosition = currentBezierPatch.listOfDifferentialGeometries[j].position;
 
 			// Update min's, if applicable
