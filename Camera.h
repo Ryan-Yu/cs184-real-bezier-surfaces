@@ -25,6 +25,9 @@ class Camera {
 		// The delta that the zoom amount gets changed by on each key press
 		float ZOOM_DELTA;
 
+		// TODO: Add rotation factor and delta
+		// TODO: Add translation factor (should this be in Scene instead?)
+
 
 	Camera() {
 		position = lookAt = up = minimum = maximum = Eigen::Vector3f(0, 0, 0);
