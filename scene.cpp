@@ -251,6 +251,18 @@ void printCommandLineOptionVariables( )
 
 
 //****************************************************
+// method that populates each BezierPatch's list of DifferentialGeometries
+// and list of Triangles, based on what kind of subdivision (i.e. adaptive or uniform)
+// we are performing
+//***************************************************
+void perform_subdivision(bool adaptive_subdivision) {
+
+}
+
+
+
+
+//****************************************************
 // function that parses an input .bez file and initializes
 // a list of Bezier patches
 //
@@ -356,6 +368,16 @@ void parseBezierFile(string filename) {
 		}
 
 		i++;
+	}
+
+	// Perform subdivision of BezierPatches, based on whether we want to adaptively or uniformly subdivide
+	if (subdivisionMethod == "ADAPTIVE") {
+		perform_subdivision(true);
+	} else if (subdivisionMethod == "UNIFORM") {
+		perform_subdivision(false);
+	} else {
+		cout << "Invalid subdivision method, terminating program.";
+		exit(1);
 	}
 
 }

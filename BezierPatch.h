@@ -29,14 +29,8 @@ class BezierPatch {
 		listOfCurves.push_back(curve);
 	}
 
-	void addTriangle(Eigen::Vector3f vertex1, Eigen::Vector3f vertex2, Eigen::Vector3f vertex3) {
+	void addTriangle(DifferentialGeometry vertex1, DifferentialGeometry vertex2, DifferentialGeometry vertex3) {
 		listOfTriangles.push_back(Triangle(vertex1, vertex2, vertex3));
-	}
-
-	void addTriangle(float ax, float ay, float az,
-			float bx, float by, float bz,
-			float cx, float cy, float cz) {
-		listOfTriangles.push_back(Triangle(ax, ay, az, bx, by, bz, cx, cy, cz));
 	}
 
 	void addDifferentialGeometry(Eigen::Vector3f position, Eigen::Vector3f normal, Eigen::Vector2f uvValues) {
