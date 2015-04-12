@@ -346,6 +346,49 @@ void printCommandLineOptionVariables( )
 }
 
 
+//****************************************************
+// function that prints all triangles in every Bezier Patch
+//***************************************************
+void printTrianglesInBezierPatches() {
+	if (debug) {
+		// Iterate through Bezier Patches
+		for (std::vector<BezierPatch>::size_type i = 0; i < listOfBezierPatches.size(); i++) {
+			cout << "  Bezier patch " << (i + 1) << ":\n\n";
+
+			// Iterate through Triangles in the current Bezier patch
+			for (std::vector<Triangle>::size_type j = 0; i < listOfBezierPatches[i].listOfTriangles.size(); j++) {
+				Triangle currentTriangle = listOfBezierPatches[i].listOfTriangles[j];
+				cout << "    Triangle " << (j + 1) << ":\n";
+				cout << "      " << currentTriangle.printTriangleInformation();
+			}
+
+		}
+	}
+}
+
+
+//****************************************************
+// function that prints all differential geometries in every Bezier Patch
+//***************************************************
+void printDifferentialGeometriesInBezierPatches() {
+	if (debug) {
+		// Iterate through Bezier Patches
+		for (std::vector<BezierPatch>::size_type i = 0; i < listOfBezierPatches.size(); i++) {
+			cout << "  Bezier patch " << (i + 1) << ":\n\n";
+
+			// Iterate through Triangles in the current Bezier patch
+			for (std::vector<DifferentialGeometry>::size_type j = 0; i < listOfBezierPatches[i].listOfDifferentialGeometries.size(); j++) {
+				DifferentialGeometry currentDifferentialGeometry = listOfBezierPatches[i].listOfDifferentialGeometries[j];
+				cout << "    DifferentialGeometry " << (j + 1) << ":\n";
+				Eigen::Vector3f currentPosition = currentDifferentialGeometry.position;
+				cout << "      (" << currentPosition.x() << " , " << currentPosition.y() << " , " << currentPosition.z() << ")\n";
+			}
+
+		}
+	}
+}
+
+
 
 //****************************************************
 // Method that populates each BezierPatch's list of DifferentialGeometries
@@ -651,9 +694,12 @@ int main(int argc, char *argv[]) {
 
 	// Parse command line options
 	parseCommandLineOptions(argc, argv);
-	printCommandLineOptionVariables();
+	// printCommandLineOptionVariables();
 
 	// At this point, all subdivision of Bezier Patches has been completed
+
+	printDifferentialGeometriesInBezierPatches();
+	printTrianglesInBezierPatches();
 
 	// Initialize position, lookAt, and up vectors of camera so that we may feed them into OpenGL rendering system later
 	initializeCamera();
