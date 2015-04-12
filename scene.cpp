@@ -27,6 +27,7 @@
 
 #include "Eigen/Geometry"
 
+#include "CurveLocalGeometry.h"
 #include "Camera.h"
 #include "DifferentialGeometry.h"
 #include "Triangle.h"

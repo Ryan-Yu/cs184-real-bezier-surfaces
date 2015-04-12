@@ -39,10 +39,39 @@ class BezierPatch {
 
 
 	//****************************************************
+	// Given the control points of a Bezier curve and a parametric value,
+	// return the curve point and derivative.
+	// This is a helper method that is used in 'evaulateDifferentialGeometry'.
+	//
+	// NOTE: This method is given in the last slide of CS184 Spring 2015 Lecture 14 (O'Brien)
+	//***************************************************
+	CurveLocalGeometry interpretBezierCurve(std::vector<Eigen::Vector3f> curve, float u) {
+		// First, split each of the three segments to form two new ones, AB and BC
+		// NOTE: 'curve' is a length-4 list of Vector3f's. Each Vector3f represents a control point of the curve.
+		Eigen::Vector3f A = (curve[0] * (1.0 - u)) + (curve[1] * u);
+		Eigen::Vector3f B = (curve[1] * (1.0 - u)) + (curve[2] * u);
+		Eigen::Vector3f C = (curve[2] * (1.0 - u)) + (curve[3] * u);
+
+		// Now, split AB and BC to form a new segment DE
+		Eigen::Vector3f D = (A * (1.0 - u)) + (B * u);
+		Eigen::Vector3f E = (B * (1.0 - u)) + (C * u);
+
+		// Finally, pick the right point on DE; this is the point on the curve
+		Eigen::Vector3f point = (D * (1.0 - u)) + (E * u);
+
+		// Then, compute the derivative
+		Eigen::Vector3f derivative = 3.0 * (E - D);
+
+		return CurveLocalGeometry(point, derivative);
+	}
+
+
+	//****************************************************
 	// TODO: Method that generates a DifferentialGeometry object that represents
 	// the result of evaluating 'this' BezierPatch at (u, v)
 	//***************************************************
 	DifferentialGeometry evaluateDifferentialGeometry(float u, float v) {
+		// Build control points for a Bezier curve in v
 
 	}
 
