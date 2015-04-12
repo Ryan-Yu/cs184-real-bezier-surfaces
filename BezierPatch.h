@@ -67,12 +67,47 @@ class BezierPatch {
 
 
 	//****************************************************
-	// TODO: Method that generates a DifferentialGeometry object that represents
+	// Method that generates a DifferentialGeometry object that represents
 	// the result of evaluating 'this' BezierPatch at (u, v)
+	//
+	// NOTE: This method is given in the last slide of CS184 Spring 2015 Lecture 14 (O'Brien)
 	//***************************************************
 	DifferentialGeometry evaluateDifferentialGeometry(float u, float v) {
-		// Build control points for a Bezier curve in v
+		// listOfCurves[i] returns a list of points that represents one curve
 
+		// Build control points for a Bezier curve in v
+		Eigen::Vector3f vCurve0 = interpretBezierCurve(listOfCurves[0], u).point;
+		Eigen::Vector3f vCurve1 = interpretBezierCurve(listOfCurves[1], u).point;
+		Eigen::Vector3f vCurve2 = interpretBezierCurve(listOfCurves[2], u).point;
+		Eigen::Vector3f vCurve3 = interpretBezierCurve(listOfCurves[3], u).point;
+
+		// Build control points for a Bezier curve in v
+		Eigen::Vector3f uCurve0 = interpretBezierCurve(listOfCurves[0], v).point;
+		Eigen::Vector3f uCurve1 = interpretBezierCurve(listOfCurves[1], v).point;
+		Eigen::Vector3f uCurve2 = interpretBezierCurve(listOfCurves[2], v).point;
+		Eigen::Vector3f uCurve3 = interpretBezierCurve(listOfCurves[3], v).point;
+
+		// Evaluate surface and derivative for u and v
+		std::vector<Eigen::Vector3f> vCurve;
+		vCurve.push_back(vCurve0);
+		vCurve.push_back(vCurve1);
+		vCurve.push_back(vCurve2);
+		vCurve.push_back(vCurve3);
+
+		std::vector<Eigen::Vector3f> uCurve;
+		uCurve.push_back(uCurve0);
+		uCurve.push_back(uCurve1);
+		uCurve.push_back(uCurve2);
+		uCurve.push_back(uCurve3);
+
+		CurveLocalGeometry finalVCurve = interpretBezierCurve(vCurve, v);
+		CurveLocalGeometry finalUCurve = interpretBezierCurve(uCurve, u);
+
+		// Take cross product of partials to find normal
+		Eigen::Vector3f normal = finalVCurve.derivative.cross(finalUCurve.derivative);
+		normal.normalize();
+
+		return DifferentialGeometry(finalVCurve.point, normal, Eigen::Vector2f(u, v));
 	}
 
 
