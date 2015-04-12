@@ -180,7 +180,7 @@ void myDisplay() {
 	// glRotatef();
 
 	/*
-	Begin drawing all of the triangles
+	TODO: Begin drawing all of the triangles
 	PSUEDOCODE:
 
 	for each BezierPatch in the scene's list of Bezier patches:
@@ -188,6 +188,60 @@ void myDisplay() {
 			Grab the three vertices of the triangle and render the triangle
 
 	*/
+
+	// Iterate through each of our BezierPatches...
+	for (std::vector<BezierPatch>::size_type i = 0; i < listOfBezierPatches.size(); i++) {
+		BezierPatch currentBezierPatch = listOfBezierPatches[i];
+		for (std::vector<Triangle>::size_type j = 0; j < currentBezierPatch.listOfTriangles.size(); j++) {
+			Triangle currentTriangleToDraw = currentBezierPatch.listOfTriangles[j];
+			DifferentialGeometry point1, point2, point3;
+			point1 = currentTriangleToDraw.point1;
+			point2 = currentTriangleToDraw.point2;
+			point3 = currentTriangleToDraw.point3;
+
+			if (WIREFRAME_MODE) {
+				// Draw objects in wireframe mode
+				glPolygonMode(GL_FRONT, GL_LINE);
+				glPolygonMode(GL_BACK, GL_LINE);
+
+				glDisable(GL_LIGHTING);
+				glClearColor(0.0, 0.0, 0.0, 0.0);
+				// Default the drawing color to white
+				glColor3f(1.0f, 1.0f, 1.0f);
+
+				glBegin(GL_POLYGON);
+
+				// Set vertex and normals of all three points of the current triangle
+				glNormal3f(point1.normal.x(), point1.normal.y(), point1.normal.z());
+				glVertex3f(point1.position.x(), point1.position.y(), point1.position.z());
+				glNormal3f(point2.normal.x(), point2.normal.y(), point2.normal.z());
+				glVertex3f(point2.position.x(), point2.position.y(), point2.position.z());
+				glNormal3f(point3.normal.x(), point3.normal.y(), point3.normal.z());
+				glVertex3f(point3.position.x(), point3.position.y(), point3.position.z());
+
+				glEnd();
+				glPolygonMode(GL_FRONT, GL_FILL);
+				glPolygonMode(GL_BACK, GL_FILL);
+
+
+			} else {
+				// Draw objects in filled mode
+				glClearColor(0.0, 0.0, 0.0, 0.0);
+				glEnable(GL_LIGHTING);
+
+				// Set vertex and normals of all three points of the current triangle
+				glNormal3f(point1.normal.x(), point1.normal.y(), point1.normal.z());
+				glVertex3f(point1.position.x(), point1.position.y(), point1.position.z());
+				glNormal3f(point2.normal.x(), point2.normal.y(), point2.normal.z());
+				glVertex3f(point2.position.x(), point2.position.y(), point2.position.z());
+				glNormal3f(point3.normal.x(), point3.normal.y(), point3.normal.z());
+				glVertex3f(point3.position.x(), point3.position.y(), point3.position.z());
+
+				glEnd();
+			}
+		}
+	}
+
 
 	glPopMatrix();
 
