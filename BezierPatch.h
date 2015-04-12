@@ -57,7 +57,7 @@ class BezierPatch {
 
 
 	//****************************************************
-	// TODO: Method that populates each BezierPatch's list of DifferentialGeometries
+	//  Method that populates each BezierPatch's list of DifferentialGeometries
 	// and list of Triangles, based on uniform subdivision
 	//***************************************************
 	void performUniformSubdivision(float stepSize) {
