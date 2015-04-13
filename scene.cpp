@@ -60,7 +60,6 @@ string subdivisionMethod;
 float subdivisionParameter;
 int numberOfBezierPatches;
 vector<BezierPatch> listOfBezierPatches;
-vector<Eigen::Vector3f> COLOR_ARRAY;
 
 // ***** Display-related global variables ***** //
 
@@ -81,15 +80,9 @@ void initScene(){
 
 	// Hard code various diffuse and specular constants
 	// NOTE: Probably should change this, I copied it from online...
-	COLOR_ARRAY.push_back( Eigen::Vector3f( 0.5, 0.0, 0.7 ));
-	COLOR_ARRAY.push_back( Eigen::Vector3f( 0.0, 0.7, 0.7 ));
-	COLOR_ARRAY.push_back( Eigen::Vector3f( 0.5, 0.5, 0.0 ));
-	COLOR_ARRAY.push_back( Eigen::Vector3f( 0.0, 0.2, 0.9 ));
-	COLOR_ARRAY.push_back( Eigen::Vector3f( 0.5, 0.9, 0.0 ));
-	COLOR_ARRAY.push_back( Eigen::Vector3f( 0.7, 0.7, 0.7 ));
 
 	SMOOTH_SHADING = true;
-	WIREFRAME_MODE = false;
+	WIREFRAME_MODE = true;
 
 	// Add light and specify material properties
 	GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
@@ -153,9 +146,6 @@ void myDisplay() {
 	// set OpenGL viewport
 	glViewport(0, 0, viewport.w, viewport.h);
 
-	// TODO: Set OpenGL perspective:
-	// void gluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar);
-
 	gluPerspective(camera.FIELD_OF_VIEW * camera.ZOOM_AMOUNT, aspect_ratio, camera.zNear, camera.zFar);
 
 	// set shading of model to smooth or flat, based on our global variable
@@ -181,7 +171,7 @@ void myDisplay() {
 	// glRotatef();
 
 	/*
-	TODO: Begin drawing all of the triangles
+	Begin drawing all of the triangles
 	PSUEDOCODE:
 
 	for each BezierPatch in the scene's list of Bezier patches:
@@ -195,6 +185,7 @@ void myDisplay() {
 		BezierPatch currentBezierPatch = listOfBezierPatches[i];
 		for (std::vector<Triangle>::size_type j = 0; j < currentBezierPatch.listOfTriangles.size(); j++) {
 			Triangle currentTriangleToDraw = currentBezierPatch.listOfTriangles[j];
+
 			DifferentialGeometry point1, point2, point3;
 			point1 = currentTriangleToDraw.point1;
 			point2 = currentTriangleToDraw.point2;
@@ -229,6 +220,8 @@ void myDisplay() {
 				// Draw objects in filled mode
 				glClearColor(0.0, 0.0, 0.0, 0.0);
 				glEnable(GL_LIGHTING);
+
+				glBegin(GL_POLYGON);
 
 				// Set vertex and normals of all three points of the current triangle
 				glNormal3f(point1.normal.x(), point1.normal.y(), point1.normal.z());
@@ -356,7 +349,7 @@ void printTrianglesInBezierPatches() {
 			cout << "  Bezier patch " << (i + 1) << ":\n\n";
 
 			// Iterate through Triangles in the current Bezier patch
-			for (std::vector<Triangle>::size_type j = 0; i < listOfBezierPatches[i].listOfTriangles.size(); j++) {
+			for (std::vector<Triangle>::size_type j = 0; j < listOfBezierPatches[i].listOfTriangles.size(); j++) {
 				Triangle currentTriangle = listOfBezierPatches[i].listOfTriangles[j];
 				cout << "    Triangle " << (j + 1) << ":\n";
 				cout << "      " << currentTriangle.printTriangleInformation();
@@ -377,7 +370,7 @@ void printDifferentialGeometriesInBezierPatches() {
 			cout << "  Bezier patch " << (i + 1) << ":\n\n";
 
 			// Iterate through Triangles in the current Bezier patch
-			for (std::vector<DifferentialGeometry>::size_type j = 0; i < listOfBezierPatches[i].listOfDifferentialGeometries.size(); j++) {
+			for (std::vector<DifferentialGeometry>::size_type j = 0; j < listOfBezierPatches[i].listOfDifferentialGeometries.size(); j++) {
 				DifferentialGeometry currentDifferentialGeometry = listOfBezierPatches[i].listOfDifferentialGeometries[j];
 				cout << "    DifferentialGeometry " << (j + 1) << ":\n";
 				Eigen::Vector3f currentPosition = currentDifferentialGeometry.position;
@@ -395,7 +388,7 @@ void printStatistics() {
 	if (debug) {
 		cout << "\n  Statistics:\n\n";
 		// Iterate through Bezier Patches
-		for (std::vector<BezierPatch*>::size_type i = 0; i < listOfBezierPatches.size(); i++) {
+		for (std::vector<BezierPatch>::size_type i = 0; i < listOfBezierPatches.size(); i++) {
 			cout << "    Bezier patch " << (i + 1) << " has " << listOfBezierPatches[i].listOfDifferentialGeometries.size()
 					<< " differential geometries and " << listOfBezierPatches[i].listOfTriangles.size() << " triangles.\n";
 		}
@@ -403,6 +396,21 @@ void printStatistics() {
 }
 
 
+
+//****************************************************
+// function that prints the number of triangles and differential geometries for each Bezier patch
+//***************************************************
+void printCameraInformation() {
+	if (debug) {
+		cout << "\n  Camera information:\n\n";
+		cout << "Position:\n" << camera.position << "\n\n";
+		cout << "Up:\n" << camera.up << "\n\n";
+		cout << "Look At:\n" << camera.lookAt << "\n\n";
+		cout << "Z-Near: " << camera.zNear << "; Z-Far: " << camera.zFar << "\n";
+		cout << "Field of view: " << camera.FIELD_OF_VIEW << "\n";
+		cout << "Zoom amount: " << camera.ZOOM_AMOUNT << "\n";
+	}
+}
 
 
 //****************************************************
@@ -413,11 +421,12 @@ void printStatistics() {
 void perform_subdivision(bool adaptive_subdivision) {
 	// Iterate through each of the Bezier patches...
 	for (std::vector<BezierPatch>::size_type i = 0; i < listOfBezierPatches.size(); i++) {
-		BezierPatch currentBezierPatch = listOfBezierPatches[i];
+//		BezierPatch currentBezierPatch = listOfBezierPatches[i];
 		if (adaptive_subdivision) {
-			currentBezierPatch.performAdaptiveSubdivision(subdivisionParameter);
+			listOfBezierPatches[i].performAdaptiveSubdivision(subdivisionParameter);
 		} else {
-			currentBezierPatch.performUniformSubdivision(subdivisionParameter);
+			listOfBezierPatches[i].performUniformSubdivision(subdivisionParameter);
+
 		}
 	}
 
@@ -650,7 +659,7 @@ void initializeCamera() {
 	camera.zNear = 1.0f;
 
 	// TODO: Change the multiple to 10.0?
-	camera.zFar = camera.zNear + (5.0f * largestLength);
+	camera.zFar = camera.zNear + (10.0f * largestLength);
 }
 
 
@@ -709,12 +718,14 @@ int main(int argc, char *argv[]) {
 
 	// Parse command line options
 	parseCommandLineOptions(argc, argv);
-	// printCommandLineOptionVariables();
+	printCommandLineOptionVariables();
 
 	// At this point, all subdivision of Bezier Patches has been completed
 
-	printDifferentialGeometriesInBezierPatches();
-	printTrianglesInBezierPatches();
+	printStatistics();
+
+//	printDifferentialGeometriesInBezierPatches();
+//	printTrianglesInBezierPatches();
 
 	// Initialize position, lookAt, and up vectors of camera so that we may feed them into OpenGL rendering system later
 	initializeCamera();
@@ -726,6 +737,8 @@ int main(int argc, char *argv[]) {
 	viewport.w = 1000;
 	viewport.h = 1000;
 
+	printCameraInformation();
+
 	//The size and position of the window
 	glutInitWindowSize(viewport.w, viewport.h);
 	glutInitWindowPosition(0,0);
@@ -735,6 +748,7 @@ int main(int argc, char *argv[]) {
 
 	glutDisplayFunc(myDisplay);				// function to run when its time to draw something
 	glutReshapeFunc(myReshape);				// function to run when the window gets resized
+	glutIdleFunc(myDisplay);
 
 	// Handles key presses
 	glutKeyboardFunc( keyPressed );

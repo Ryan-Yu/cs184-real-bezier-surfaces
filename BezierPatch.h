@@ -125,7 +125,8 @@ class BezierPatch {
 	// and list of Triangles, based on uniform subdivision
 	//***************************************************
 	void performUniformSubdivision(float stepSize) {
-		int numberOfSteps = 1.0 / stepSize;
+		float epsilon = 0.001;
+		int numberOfSteps = (1.0 + epsilon) / stepSize;
 		for (int u = 0; u < numberOfSteps; u++) {
 			for (int v = 0; v < numberOfSteps; v++) {
 				// Evaluate the differential geometry at (u * stepSize, v * stepSize(
