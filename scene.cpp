@@ -388,6 +388,21 @@ void printDifferentialGeometriesInBezierPatches() {
 	}
 }
 
+//****************************************************
+// function that prints the number of triangles and differential geometries for each Bezier patch
+//***************************************************
+void printStatistics() {
+	if (debug) {
+		cout << "\n  Statistics:\n\n";
+		// Iterate through Bezier Patches
+		for (std::vector<BezierPatch*>::size_type i = 0; i < listOfBezierPatches.size(); i++) {
+			cout << "    Bezier patch " << (i + 1) << " has " << listOfBezierPatches[i].listOfDifferentialGeometries.size()
+					<< " differential geometries and " << listOfBezierPatches[i].listOfTriangles.size() << " triangles.\n";
+		}
+	}
+}
+
+
 
 
 //****************************************************
