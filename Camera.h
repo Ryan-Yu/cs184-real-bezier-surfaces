@@ -37,6 +37,14 @@ class Camera {
 		ZOOM_DELTA = 0.1;
 	}
 
+	void zoomIn() {
+		ZOOM_AMOUNT -= ZOOM_DELTA;
+	}
+
+	void zoomOut() {
+		ZOOM_AMOUNT += ZOOM_DELTA;
+	}
+
 };
 
 

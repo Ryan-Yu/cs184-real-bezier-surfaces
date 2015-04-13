@@ -282,6 +282,16 @@ void keyPressed( unsigned char key, int x, int y )
 		}
 		break;
 
+	case '+':
+		// Zoom in
+		camera.zoomIn();
+		break;
+
+	case '-':
+		// Zoom out
+		camera.zoomOut();
+		break;
+
 	}
 
 	// TODO: arrow keys = object rotated
