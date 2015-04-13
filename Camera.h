@@ -45,6 +45,12 @@ class Camera {
 		ZOOM_AMOUNT += ZOOM_DELTA;
 	}
 
+	void resetCamera() {
+		FIELD_OF_VIEW = 90.0f;
+		ZOOM_AMOUNT = 1.0f;
+		ZOOM_DELTA = 0.1;
+	}
+
 };
 
 

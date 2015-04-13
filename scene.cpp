@@ -292,6 +292,12 @@ void keyPressed( unsigned char key, int x, int y )
 		camera.zoomOut();
 		break;
 
+	case 'r':
+		// Reset everything
+		SMOOTH_SHADING = true;
+		WIREFRAME_MODE = true;
+		camera.resetCamera();
+		break;
 	}
 
 	// TODO: arrow keys = object rotated
