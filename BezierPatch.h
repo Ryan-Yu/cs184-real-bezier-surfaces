@@ -127,8 +127,8 @@ class BezierPatch {
 	void performUniformSubdivision(float stepSize) {
 		float epsilon = 0.001;
 		int numberOfSteps = (1.0 + epsilon) / stepSize;
-		for (int u = 0; u < numberOfSteps; u++) {
-			for (int v = 0; v < numberOfSteps; v++) {
+		for (int u = 0; u <= numberOfSteps; u++) {
+			for (int v = 0; v <= numberOfSteps; v++) {
 				// Evaluate the differential geometry at (u * stepSize, v * stepSize(
 				// For instance, if stepSize = 0.1, then we would evaluate at (0, 0), (0, 0.1), (0, 0.2), etc
 				listOfDifferentialGeometries.push_back(evaluateDifferentialGeometry(u * stepSize, v * stepSize));
@@ -163,8 +163,8 @@ class BezierPatch {
 		// so that 1-2-3 form a triangle (tri-1) and 2-3-4 form a triangle (tri-2)
 
 		// Iterate through all of our differential geometries, but do NOT touch the right-most column and the bottom-most row
-		for (int u = 0; u < (numberOfSteps - 1); u++) {
-			for (int v = 0; v < (numberOfSteps - 1); v++) {
+		for (int u = 0; u < numberOfSteps; u++) {
+			for (int v = 0; v < numberOfSteps; v++) {
 				// (u, v) represents the index in the above grid that we're triangulating
 				// This index represents the TOP LEFT corner of the 4-point rectangle that is described above
 

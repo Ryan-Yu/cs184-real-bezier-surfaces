@@ -85,11 +85,11 @@ void initScene(){
 	WIREFRAME_MODE = true;
 
 	// Add light and specify material properties
-	GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
+	GLfloat light_position[] = { 0.0, 0.0, 1.0, 0.0 };
 	GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
 	GLfloat mat_diffuse[] = { 0.5, 0.0, 0.7, 1.0 };
 	GLfloat mat_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
-	GLfloat mat_shininess[] = { 20.0 };
+	GLfloat mat_shininess[] = { 0.0 };
 	glShadeModel(GL_SMOOTH);
 
 	glClearColor (0.0, 0.0, 0.0, 0.0);
@@ -100,7 +100,7 @@ void initScene(){
 	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
-	glEnable(GL_LIGHTING);
+
 	glEnable(GL_LIGHT0);
 	glEnable(GL_DEPTH_TEST);
 
@@ -164,10 +164,7 @@ void myDisplay() {
 	gluLookAt(camera.position.x(), camera.position.y(), camera.position.z(), camera.lookAt.x(), camera.lookAt.y(),
 			camera.lookAt.z(), camera.up.x(), camera.up.y(), camera.up.z());
 
-	// TODO: Set translate and rotate
 	// glPushMatrix();
-	// glTranslatef();
-	// glRotatef();
 	glRotatef(camera.X_ROTATION_AMOUNT, 1, 0, 0);
 	glRotatef(camera.Y_ROTATION_AMOUNT, 0, 1, 0);
 
@@ -483,7 +480,6 @@ void printCameraInformation() {
 void perform_subdivision(bool adaptive_subdivision) {
 	// Iterate through each of the Bezier patches...
 	for (std::vector<BezierPatch>::size_type i = 0; i < listOfBezierPatches.size(); i++) {
-//		BezierPatch currentBezierPatch = listOfBezierPatches[i];
 		if (adaptive_subdivision) {
 			listOfBezierPatches[i].performAdaptiveSubdivision(subdivisionParameter);
 		} else {
