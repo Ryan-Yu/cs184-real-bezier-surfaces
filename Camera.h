@@ -25,13 +25,16 @@ class Camera {
 		// The delta that the zoom amount gets changed by on each key press
 		float ZOOM_DELTA;
 
-		// TODO: Add rotation factor and delta
+		// Handle rotation factor and delta
 		float X_ROTATION_AMOUNT;
 		float Y_ROTATION_AMOUNT;
-
 		float ROTATION_DELTA;
 
-		// TODO: Add translation factor (should this be in Scene instead?)
+		// Handle translation factor and delta
+		float X_TRANSLATION_AMOUNT;
+		float Y_TRANSLATION_AMOUNT;
+		float Z_TRANSLATION_AMOUNT;
+		float TRANSLATION_DELTA;
 
 
 	Camera() {
@@ -42,6 +45,9 @@ class Camera {
 		ZOOM_DELTA = 0.1;
 		ROTATION_DELTA = 3.0f;
 		X_ROTATION_AMOUNT = Y_ROTATION_AMOUNT = 0.0;
+		X_TRANSLATION_AMOUNT = Y_TRANSLATION_AMOUNT = Z_TRANSLATION_AMOUNT = 0.0;
+		TRANSLATION_DELTA = 0.2f;
+
 	}
 
 	void zoomIn() {
@@ -58,6 +64,7 @@ class Camera {
 		ZOOM_DELTA = 0.1;
 		X_ROTATION_AMOUNT = 0.0;
 		Y_ROTATION_AMOUNT = 0.0;
+		X_TRANSLATION_AMOUNT = Y_TRANSLATION_AMOUNT = Z_TRANSLATION_AMOUNT = 0.0;
 	}
 
 	void rotateLeft() {
@@ -75,6 +82,23 @@ class Camera {
 	void rotateDown() {
 		Y_ROTATION_AMOUNT -= ROTATION_DELTA;
 	}
+
+	void translateUp() {
+		Y_TRANSLATION_AMOUNT += TRANSLATION_DELTA;
+	}
+
+	void translateDown() {
+		Y_TRANSLATION_AMOUNT -= TRANSLATION_DELTA;
+	}
+
+	void translateRight() {
+		X_TRANSLATION_AMOUNT += TRANSLATION_DELTA;
+	}
+
+	void translateLeft() {
+		X_TRANSLATION_AMOUNT -= TRANSLATION_DELTA;
+	}
+
 
 };
 

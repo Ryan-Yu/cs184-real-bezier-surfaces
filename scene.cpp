@@ -171,6 +171,8 @@ void myDisplay() {
 	glRotatef(camera.X_ROTATION_AMOUNT, 1, 0, 0);
 	glRotatef(camera.Y_ROTATION_AMOUNT, 0, 1, 0);
 
+	glTranslatef(camera.X_TRANSLATION_AMOUNT, camera.Y_TRANSLATION_AMOUNT, camera.Z_TRANSLATION_AMOUNT);
+
 
 	/*
 	Begin drawing all of the triangles
@@ -311,24 +313,40 @@ void keyPressed( unsigned char key, int x, int y )
 // function that assists with special (i.e. arrow key) key presses
 //***************************************************
 void handleSpecialKeypress(int key, int x, int y) {
+	int mod_key = glutGetModifiers();
 	switch (key) {
-
-		// Handle all rotations with arrow keys
 		case GLUT_KEY_LEFT:
-			camera.rotateLeft();
+			if (mod_key == GLUT_ACTIVE_SHIFT) {
+				camera.translateLeft();
+			} else {
+				camera.rotateLeft();
+			}
 			break;
 
 		case GLUT_KEY_RIGHT:
-			camera.rotateRight();
+			if (mod_key == GLUT_ACTIVE_SHIFT) {
+				camera.translateRight();
+			} else {
+				camera.rotateRight();
+			}
 			break;
 
 		case GLUT_KEY_UP:
-			camera.rotateUp();
+			if (mod_key == GLUT_ACTIVE_SHIFT) {
+				camera.translateUp();
+			} else {
+				camera.rotateUp();
+			}
 			break;
 
 		case GLUT_KEY_DOWN:
-			camera.rotateDown();
+			if (mod_key == GLUT_ACTIVE_SHIFT) {
+				camera.translateDown();
+			} else {
+				camera.rotateDown();
+			}
 			break;
+
 	}
 	glutPostRedisplay();
 
