@@ -168,7 +168,9 @@ void myDisplay() {
 	// glPushMatrix();
 	// glTranslatef();
 	// glRotatef();
-	// glRotatef();
+	glRotatef(camera.X_ROTATION_AMOUNT, 1, 0, 0);
+	glRotatef(camera.Y_ROTATION_AMOUNT, 0, 1, 0);
+
 
 	/*
 	Begin drawing all of the triangles
@@ -246,7 +248,7 @@ void myDisplay() {
 
 
 //****************************************************
-// function that assists with exit of program on space bar press
+// function that assists with regular key presses
 //***************************************************
 void keyPressed( unsigned char key, int x, int y )
 {
@@ -300,9 +302,35 @@ void keyPressed( unsigned char key, int x, int y )
 		break;
 	}
 
-	// TODO: arrow keys = object rotated
 	// TODO: shift + arrow keys = object translated (need to use special key for this, probably)
-	// TODO: +/- keys = zoom in/out
+
+}
+
+
+//****************************************************
+// function that assists with special (i.e. arrow key) key presses
+//***************************************************
+void handleSpecialKeypress(int key, int x, int y) {
+	switch (key) {
+
+		// Handle all rotations with arrow keys
+		case GLUT_KEY_LEFT:
+			camera.rotateLeft();
+			break;
+
+		case GLUT_KEY_RIGHT:
+			camera.rotateRight();
+			break;
+
+		case GLUT_KEY_UP:
+			camera.rotateUp();
+			break;
+
+		case GLUT_KEY_DOWN:
+			camera.rotateDown();
+			break;
+	}
+	glutPostRedisplay();
 
 }
 
@@ -768,6 +796,7 @@ int main(int argc, char *argv[]) {
 
 	// Handles key presses
 	glutKeyboardFunc( keyPressed );
+	glutSpecialFunc( handleSpecialKeypress );
 
 	glutMainLoop();							// infinite loop that will keep drawing and resizing
 	// and whatever else

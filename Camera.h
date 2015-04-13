@@ -26,6 +26,11 @@ class Camera {
 		float ZOOM_DELTA;
 
 		// TODO: Add rotation factor and delta
+		float X_ROTATION_AMOUNT;
+		float Y_ROTATION_AMOUNT;
+
+		float ROTATION_DELTA;
+
 		// TODO: Add translation factor (should this be in Scene instead?)
 
 
@@ -35,6 +40,8 @@ class Camera {
 		FIELD_OF_VIEW = 90.0f;
 		ZOOM_AMOUNT = 1.0f;
 		ZOOM_DELTA = 0.1;
+		ROTATION_DELTA = 3.0f;
+		X_ROTATION_AMOUNT = Y_ROTATION_AMOUNT = 0.0;
 	}
 
 	void zoomIn() {
@@ -49,6 +56,24 @@ class Camera {
 		FIELD_OF_VIEW = 90.0f;
 		ZOOM_AMOUNT = 1.0f;
 		ZOOM_DELTA = 0.1;
+		X_ROTATION_AMOUNT = 0.0;
+		Y_ROTATION_AMOUNT = 0.0;
+	}
+
+	void rotateLeft() {
+		X_ROTATION_AMOUNT -= ROTATION_DELTA;
+	}
+
+	void rotateRight() {
+		X_ROTATION_AMOUNT += ROTATION_DELTA;
+	}
+
+	void rotateUp() {
+		Y_ROTATION_AMOUNT += ROTATION_DELTA;
+	}
+
+	void rotateDown() {
+		Y_ROTATION_AMOUNT -= ROTATION_DELTA;
 	}
 
 };
