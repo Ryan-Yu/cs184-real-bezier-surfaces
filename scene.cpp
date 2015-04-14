@@ -344,6 +344,8 @@ void handleSpecialKeypress(int key, int x, int y) {
 		case GLUT_KEY_UP:
 			if (mod_key == GLUT_ACTIVE_SHIFT) {
 				camera.translateUp();
+			} else if (mod_key == GLUT_ACTIVE_ALT) {
+				camera.translateZUp();
 			} else {
 				camera.rotateLeft();
 			}
@@ -352,6 +354,8 @@ void handleSpecialKeypress(int key, int x, int y) {
 		case GLUT_KEY_DOWN:
 			if (mod_key == GLUT_ACTIVE_SHIFT) {
 				camera.translateDown();
+			} else if (mod_key == GLUT_ACTIVE_ALT) {
+				camera.translateZDown();
 			} else {
 				camera.rotateRight();
 			}
