@@ -104,11 +104,11 @@ class BezierPatch {
 		CurveLocalGeometry finalUCurve = interpretBezierCurve(uCurve, u);
 
 		// Take cross product of partials to find normal
-		Eigen::Vector3f normal = finalUCurve.derivative.cross(finalVCurve.derivative);
-//		Eigen::Vector3f normal = finalVCurve.derivative.cross(finalUCurve.derivative);
+//		Eigen::Vector3f normal = finalUCurve.derivative.cross(finalVCurve.derivative);
+		Eigen::Vector3f normal = finalVCurve.derivative.cross(finalUCurve.derivative);
 		normal.normalize();
 
-		return DifferentialGeometry(finalVCurve.point, normal, Eigen::Vector2f(u, v));
+		return DifferentialGeometry(finalUCurve.point, normal, Eigen::Vector2f(u, v));
 	}
 
 
@@ -117,7 +117,50 @@ class BezierPatch {
 	// and list of Triangles, based on adaptive subdivision
 	//***************************************************
 	void performAdaptiveSubdivision(float error) {
-
+		// Algorithm:
+		//
+		// First, we add the DifferentialGeometries (u,v) = (0,0) , (0,1) , (1,0) , (1,1)
+		// to our BezierPatch's list of differential geometries.
+		//
+		// 1  2
+		// 3  4
+		//
+		// Next, we add two triangles to our triangle queue: 1-3-2  &  2-3-4
+		//
+		// while triangle_queue.is_not_empty:
+		//     current_triangle = triangle_queue.pop();
+		//
+		//     (our triangle now looks like  A--B )
+		//                                   | /
+		//                                   C
+		//
+		//     for each edge (X -> Y) in edges [ (A -> B) ; (A -> C) ; (B -> C) ]:
+		//          first, calculate the (u, v) value of the MIDPOINT of (X -> Y).
+		//          this is given by: [(u, v) value of X   +   (u, v) value of Y] / 2.0f
+		//
+		//          then, interpolate this MIDPOINT (u, v) value with evaluateDifferentialGeometry(u, v).
+		//          this results in a DifferentialGeometry midpointInterpolatedValue.
+		//
+		//          now, we need to calculate the APPROXIMATED (i.e. non interpolated) value of the differential geometry
+		//          at this midpoint.
+		//          this is given by:   [ [(x, y, z) value of Y    -   (x, y, z) value of X] / 2.0 ]  +  (x, y, z) value of X
+		//          this results in a Eigen::Vector3f midpointApproximatedValue.
+		//
+		//          now, we compare midpointInterpolatedValue.position and midpointApproximatedValue
+		//          i.e. subtract the two Vector3f's, and take the magnitude of their difference (i.e. square root of dot product with self)
+		//          let us call this magnitude the 'errorValue'
+		//
+		//          if (errorValue >= error):
+		//              then we need to mark (X -> Y) as NEEDING TO BE SPLIT
+		//
+		//    now, we have 3 boolean variables that correspond to whether (A -> B), (A -> C), (B -> C) need to be split.
+		//    this corresponds with 8 total cases.
+		//
+		//    based on these 8 cases, we simply add relevant vertices to listOfDiferentialGeometries
+		//    and add newly split triangles to our triangle queue as specified in the lecture slides
+		//
+		//    (if all 3 boolean variables are false, i.e. no splits necessary, then we add our popped triangle
+		//     to the current bezier patch's listOfTriangles)
 	}
 
 
@@ -178,9 +221,9 @@ class BezierPatch {
 
 				// Construct tri-1
 				listOfTriangles.push_back(Triangle(
+						listOfDifferentialGeometries[differentialGeometrixIndex + numberOfSteps + 1], // top right
 						listOfDifferentialGeometries[differentialGeometrixIndex], // top left
-						listOfDifferentialGeometries[differentialGeometrixIndex + numberOfSteps + 1], // move one unit right
-						listOfDifferentialGeometries[differentialGeometrixIndex + 1])); // move one unit down from top left
+						listOfDifferentialGeometries[differentialGeometrixIndex + 1])); // bottom left
 
 				// Construct tri-2
 				listOfTriangles.push_back(Triangle(
@@ -190,7 +233,6 @@ class BezierPatch {
 			}
 		}
 		// We should have (numberOfSteps - 1) * (numberOfSteps - 1) * 2 triangles
-
 	}
 };
 

@@ -104,6 +104,7 @@ void initScene(){
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
 	glEnable(GL_DEPTH_TEST);
+//	glEnable(GL_CULL_FACE);
 
 }
 
@@ -165,10 +166,12 @@ void myDisplay() {
 	gluLookAt(camera.position.x(), camera.position.y(), camera.position.z(), camera.lookAt.x(), camera.lookAt.y(),
 			camera.lookAt.z(), camera.up.x(), camera.up.y(), camera.up.z());
 
-	// glPushMatrix();
+	// Handle rotations
 	glRotatef(camera.X_ROTATION_AMOUNT, 1, 0, 0);
 	glRotatef(camera.Y_ROTATION_AMOUNT, 0, 1, 0);
+	glRotatef(camera.Z_ROTATION_AMOUNT, 0, 0, 1);
 
+	// Handle translations
 	glTranslatef(camera.X_TRANSLATION_AMOUNT, camera.Y_TRANSLATION_AMOUNT, camera.Z_TRANSLATION_AMOUNT);
 
 
@@ -299,6 +302,16 @@ void keyPressed( unsigned char key, int x, int y )
 		WIREFRAME_MODE = true;
 		camera.resetCamera();
 		break;
+
+	case '.':
+		// Rotate Z clockwise, looking from above
+		camera.rotateZDown();
+		break;
+
+	case ',':
+		// Rotate Z counterclockwise, looking from above
+		camera.rotateZUp();
+		break;
 	}
 
 	// TODO: shift + arrow keys = object translated (need to use special key for this, probably)
@@ -316,7 +329,7 @@ void handleSpecialKeypress(int key, int x, int y) {
 			if (mod_key == GLUT_ACTIVE_SHIFT) {
 				camera.translateLeft();
 			} else {
-				camera.rotateLeft();
+				camera.rotateDown();
 			}
 			break;
 
@@ -324,7 +337,7 @@ void handleSpecialKeypress(int key, int x, int y) {
 			if (mod_key == GLUT_ACTIVE_SHIFT) {
 				camera.translateRight();
 			} else {
-				camera.rotateRight();
+				camera.rotateUp();
 			}
 			break;
 
@@ -332,7 +345,7 @@ void handleSpecialKeypress(int key, int x, int y) {
 			if (mod_key == GLUT_ACTIVE_SHIFT) {
 				camera.translateUp();
 			} else {
-				camera.rotateUp();
+				camera.rotateLeft();
 			}
 			break;
 
@@ -340,8 +353,14 @@ void handleSpecialKeypress(int key, int x, int y) {
 			if (mod_key == GLUT_ACTIVE_SHIFT) {
 				camera.translateDown();
 			} else {
-				camera.rotateDown();
+				camera.rotateRight();
 			}
+			break;
+		case GLUT_KEY_PAGE_UP:
+			camera.translateZUp();
+			break;
+		case GLUT_KEY_PAGE_DOWN:
+			camera.translateZDown();
 			break;
 
 	}
