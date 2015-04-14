@@ -217,11 +217,12 @@ void myDisplay() {
 
 			} else {
 				// Draw objects in filled mode
-				glPolygonMode( GL_FRONT_AND_BACK, GL_FILL);
+				glPolygonMode( GL_FRONT, GL_FILL);
+				glPolygonMode( GL_BACK, GL_FILL);
 				glClearColor(0.0, 0.0, 0.0, 0.0);
 				glEnable(GL_LIGHTING);
 
-				glBegin(GL_TRIANGLES);
+				glBegin(GL_POLYGON);
 
 				// Set vertex and normals of all three points of the current triangle
 				glNormal3f(point1.normal.x(), point1.normal.y(), point1.normal.z());

@@ -104,8 +104,9 @@ class BezierPatch {
 		CurveLocalGeometry finalUCurve = interpretBezierCurve(uCurve, u);
 
 		// Take cross product of partials to find normal
-		Eigen::Vector3f normal = finalVCurve.derivative.cross(finalUCurve.derivative);
-		normal = normal.normalized();
+		Eigen::Vector3f normal = finalUCurve.derivative.cross(finalVCurve.derivative);
+//		Eigen::Vector3f normal = finalVCurve.derivative.cross(finalUCurve.derivative);
+		normal.normalize();
 
 		return DifferentialGeometry(finalVCurve.point, normal, Eigen::Vector2f(u, v));
 	}
