@@ -105,7 +105,7 @@ class BezierPatch {
 
 		// Take cross product of partials to find normal
 		Eigen::Vector3f normal = finalVCurve.derivative.cross(finalUCurve.derivative);
-		normal.normalize();
+		normal = normal.normalized();
 
 		return DifferentialGeometry(finalVCurve.point, normal, Eigen::Vector2f(u, v));
 	}
@@ -125,7 +125,7 @@ class BezierPatch {
 	// and list of Triangles, based on uniform subdivision
 	//***************************************************
 	void performUniformSubdivision(float stepSize) {
-		float epsilon = 0.001;
+		float epsilon = 0.001f;
 		int numberOfSteps = (1.0 + epsilon) / stepSize;
 		for (int u = 0; u <= numberOfSteps; u++) {
 			for (int v = 0; v <= numberOfSteps; v++) {
@@ -169,23 +169,27 @@ class BezierPatch {
 				// This index represents the TOP LEFT corner of the 4-point rectangle that is described above
 
 				// Index of listOfDifferentialGeometries that corresponds with position (u, v)
-				int differentialGeometrixIndex = (u * numberOfSteps) + v;
+				int differentialGeometrixIndex = (u * (numberOfSteps + 1)) + v;
+
+				// NOTE: If stepSize = 0.2, then 1 / 0.2 = 5, but since we INCLUDE the fifth point, we actually have
+				// 36 differential geometries in our list, so if you move RIGHT one point, you have to go
+				// (numberOfSteps + 1) indexes down in the listOfDifferentialGeometries
 
 				// Construct tri-1
 				listOfTriangles.push_back(Triangle(
 						listOfDifferentialGeometries[differentialGeometrixIndex], // top left
-						listOfDifferentialGeometries[differentialGeometrixIndex + numberOfSteps], // move one unit right
+						listOfDifferentialGeometries[differentialGeometrixIndex + numberOfSteps + 1], // move one unit right
 						listOfDifferentialGeometries[differentialGeometrixIndex + 1])); // move one unit down from top left
 
 				// Construct tri-2
 				listOfTriangles.push_back(Triangle(
-						listOfDifferentialGeometries[differentialGeometrixIndex + numberOfSteps], // top right
+						listOfDifferentialGeometries[differentialGeometrixIndex + numberOfSteps + 1], // top right
 						listOfDifferentialGeometries[differentialGeometrixIndex + 1], // bottom left
-						listOfDifferentialGeometries[differentialGeometrixIndex + numberOfSteps + 1])); // bottom right
+						listOfDifferentialGeometries[differentialGeometrixIndex + numberOfSteps + 2])); // bottom right
 			}
 		}
-
 		// We should have (numberOfSteps - 1) * (numberOfSteps - 1) * 2 triangles
+
 	}
 };
 

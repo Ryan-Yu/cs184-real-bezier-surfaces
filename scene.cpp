@@ -84,24 +84,25 @@ void initScene(){
 	SMOOTH_SHADING = true;
 	WIREFRAME_MODE = true;
 
-	// Add light and specify material properties
-	GLfloat light_position[] = { 0.0, 0.0, 1.0, 0.0 };
-	GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-	GLfloat mat_diffuse[] = { 0.5, 0.0, 0.7, 1.0 };
-	GLfloat mat_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
-	GLfloat mat_shininess[] = { 0.0 };
-	glShadeModel(GL_SMOOTH);
+	GLfloat ambientColor[] = {0.5f, 0.5f, 0.5f, 1.0f}; //Color(0.2, 0.2, 0.2)
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
 
-	glClearColor (0.0, 0.0, 0.0, 0.0);
+	//Add directed light
+	GLfloat lightColor1[] = {0.5f, 0.2f, 0.2f, 1.0f}; //Color (0.5, 0.2, 0.2)
+	//Coming from the direction (-1, 0.5, 0.5)
+	GLfloat lightPos1[] = {-1.0f, 0.5f, 3.5f, 0.0f};
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor1);
+	glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);
 
-	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-	glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+	//Add positioned light
+	GLfloat lightColor0[] = {0.5f, 0.5f, 0.5f, 1.0f}; //Color (0.5, 0.5, 0.5)
+	GLfloat lightPos0[] = {4.0f, 0.0f, 8.0f, 1.0f}; //Positioned at (4, 0, 8)
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor0);
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPos0);
 
-
+	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT1);
 	glEnable(GL_DEPTH_TEST);
 
 }
@@ -134,7 +135,7 @@ void myReshape(int w, int h) {
 void myDisplay() {
 
 	// clear the color buffer
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_PROJECTION);
 
@@ -194,8 +195,7 @@ void myDisplay() {
 
 			if (WIREFRAME_MODE) {
 				// Draw objects in wireframe mode
-				glPolygonMode(GL_FRONT, GL_LINE);
-				glPolygonMode(GL_BACK, GL_LINE);
+				glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
 
 				glDisable(GL_LIGHTING);
 				glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -213,16 +213,15 @@ void myDisplay() {
 				glVertex3f(point3.position.x(), point3.position.y(), point3.position.z());
 
 				glEnd();
-				glPolygonMode(GL_FRONT, GL_FILL);
-				glPolygonMode(GL_BACK, GL_FILL);
 
 
 			} else {
 				// Draw objects in filled mode
+				glPolygonMode( GL_FRONT_AND_BACK, GL_FILL);
 				glClearColor(0.0, 0.0, 0.0, 0.0);
 				glEnable(GL_LIGHTING);
 
-				glBegin(GL_POLYGON);
+				glBegin(GL_TRIANGLES);
 
 				// Set vertex and normals of all three points of the current triangle
 				glNormal3f(point1.normal.x(), point1.normal.y(), point1.normal.z());
@@ -789,7 +788,7 @@ int main(int argc, char *argv[]) {
 	initializeCamera();
 
 	//This tells glut to use a double-buffered window with red, green, and blue channels
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);
 
 	// Initalize theviewport size
 	viewport.w = 1000;
