@@ -81,11 +81,35 @@ class BezierPatch {
 		Eigen::Vector3f vCurve2 = interpretBezierCurve(listOfCurves[2], u).point;
 		Eigen::Vector3f vCurve3 = interpretBezierCurve(listOfCurves[3], u).point;
 
+		std::vector<Eigen::Vector3f> uCurve0List;
+		uCurve0List.push_back(listOfCurves[0][0]);
+		uCurve0List.push_back(listOfCurves[1][0]);
+		uCurve0List.push_back(listOfCurves[2][0]);
+		uCurve0List.push_back(listOfCurves[3][0]);
+
+		std::vector<Eigen::Vector3f> uCurve1List;
+		uCurve1List.push_back(listOfCurves[0][1]);
+		uCurve1List.push_back(listOfCurves[1][1]);
+		uCurve1List.push_back(listOfCurves[2][1]);
+		uCurve1List.push_back(listOfCurves[3][1]);
+
+		std::vector<Eigen::Vector3f> uCurve2List;
+		uCurve2List.push_back(listOfCurves[0][2]);
+		uCurve2List.push_back(listOfCurves[1][2]);
+		uCurve2List.push_back(listOfCurves[2][2]);
+		uCurve2List.push_back(listOfCurves[3][2]);
+
+		std::vector<Eigen::Vector3f> uCurve3List;
+		uCurve3List.push_back(listOfCurves[0][3]);
+		uCurve3List.push_back(listOfCurves[1][3]);
+		uCurve3List.push_back(listOfCurves[2][3]);
+		uCurve3List.push_back(listOfCurves[3][3]);
+
 		// Build control points for a Bezier curve in v
-		Eigen::Vector3f uCurve0 = interpretBezierCurve(listOfCurves[0], v).point;
-		Eigen::Vector3f uCurve1 = interpretBezierCurve(listOfCurves[1], v).point;
-		Eigen::Vector3f uCurve2 = interpretBezierCurve(listOfCurves[2], v).point;
-		Eigen::Vector3f uCurve3 = interpretBezierCurve(listOfCurves[3], v).point;
+		Eigen::Vector3f uCurve0 = interpretBezierCurve(uCurve0List, v).point;
+		Eigen::Vector3f uCurve1 = interpretBezierCurve(uCurve1List, v).point;
+		Eigen::Vector3f uCurve2 = interpretBezierCurve(uCurve2List, v).point;
+		Eigen::Vector3f uCurve3 = interpretBezierCurve(uCurve3List, v).point;
 
 		// Evaluate surface and derivative for u and v
 		std::vector<Eigen::Vector3f> vCurve;
@@ -104,8 +128,8 @@ class BezierPatch {
 		CurveLocalGeometry finalUCurve = interpretBezierCurve(uCurve, u);
 
 		// Take cross product of partials to find normal
-//		Eigen::Vector3f normal = finalUCurve.derivative.cross(finalVCurve.derivative);
-		Eigen::Vector3f normal = finalVCurve.derivative.cross(finalUCurve.derivative);
+		Eigen::Vector3f normal = finalUCurve.derivative.cross(finalVCurve.derivative);
+//		Eigen::Vector3f normal = finalVCurve.derivative.cross(finalUCurve.derivative);
 		normal.normalize();
 
 		return DifferentialGeometry(finalUCurve.point, normal, Eigen::Vector2f(u, v));
