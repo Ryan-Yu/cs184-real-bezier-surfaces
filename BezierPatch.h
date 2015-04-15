@@ -152,15 +152,15 @@ class BezierPatch {
 		listOfDifferentialGeometries.push_back(evaluateDifferentialGeometry(1, 0));
 		listOfDifferentialGeometries.push_back(evaluateDifferentialGeometry(1, 1));
 
-		queueOfTriangles.push(Triangle(listOfDifferentialGeometries[2], listOfDifferentialGeometries[3], listOfDifferentialGeometries[1]));
-		queueOfTriangles.push(Triangle(listOfDifferentialGeometries[3], listOfDifferentialGeometries[2], listOfDifferentialGeometries[4]));
+		queueOfTriangles.push(Triangle(listOfDifferentialGeometries[1], listOfDifferentialGeometries[2], listOfDifferentialGeometries[0]));
+		queueOfTriangles.push(Triangle(listOfDifferentialGeometries[2], listOfDifferentialGeometries[1], listOfDifferentialGeometries[3]));
 
 		DifferentialGeometry midpointInterpolatedValueAB;
 		DifferentialGeometry midpointInterpolatedValueBC;
 		DifferentialGeometry midpointInterpolatedValueAC;
 
 		while (!queueOfTriangles.empty()) {
-			std::cout << queueOfTriangles.size() << "\n";
+
 			Triangle currentTriangleToTest = queueOfTriangles.front();
 			DifferentialGeometry pointA = currentTriangleToTest.point1;
 			DifferentialGeometry pointB = currentTriangleToTest.point2;
@@ -179,6 +179,7 @@ class BezierPatch {
 
 			Eigen::Vector3f errorVector = midpointInterpolatedValueAB.position - midpointApproximatedValue;
 			float errorValue = sqrt(errorVector.dot(errorVector));
+
 
 			if (errorValue >= error) {
 				abSplit = true;
@@ -205,7 +206,6 @@ class BezierPatch {
 
 			errorVector = midpointInterpolatedValueAC.position - midpointApproximatedValue;
 			errorValue = sqrt(errorVector.dot(errorVector));
-
 			if (errorValue >= error) {
 				acSplit = true;
 			}

@@ -90,9 +90,9 @@ void initScene(){
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
 
 	//Add directed light
-	GLfloat lightColor1[] = {0.5f, 0.2f, 0.2f, 1.0f}; //Color (0.5, 0.2, 0.2)
+	GLfloat lightColor1[] = {0.5f, 0.2f, 0.8f, 1.0f}; //Color (0.5, 0.2, 0.2)
 	//Coming from the direction (-1, 0.5, 0.5)
-	GLfloat lightPos1[] = {-1.0f, 0.5f, 3.5f, 0.0f};
+	GLfloat lightPos1[] = {-10.0f, 5.5f, 8.5f, 0.0f};
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor1);
 	glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);
 
@@ -654,11 +654,11 @@ void parseCommandLineOptions(int argc, char *argv[])
 
 	bezFilename = argv[1];
 	subdivisionParameter = stof(argv[2]);
-	string subdivisionFlag = argv[3];
 	if (argc == 3) {
 		subdivisionMethod = "UNIFORM";
 	} else {
 		// We have a fourth command line parameter
+		string subdivisionFlag = argv[3];
 		if (subdivisionFlag == "-a") {
 			subdivisionMethod = "ADAPTIVE";
 		} else {;
