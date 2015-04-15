@@ -25,6 +25,7 @@
 #include <bitset>
 #include <algorithm>
 
+
 #include "Eigen/Geometry"
 
 #include "CurveLocalGeometry.h"
@@ -46,6 +47,7 @@ class Viewport;
 class Viewport {
 public:
 	int w, h; // width and height
+
 };
 
 
@@ -652,15 +654,16 @@ void parseCommandLineOptions(int argc, char *argv[])
 
 	bezFilename = argv[1];
 	subdivisionParameter = stof(argv[2]);
+	string subdivisionFlag = argv[3];
 	if (argc == 3) {
 		subdivisionMethod = "UNIFORM";
 	} else {
 		// We have a fourth command line parameter
-		if (argv[3] == "-a") {
+		if (subdivisionFlag == "-a") {
 			subdivisionMethod = "ADAPTIVE";
-		} else {
+		} else {;
 			// Fourth command line parameter is invalid
-			cout << "Must specific subdivision method, terminating program.";
+			cout << "Must specify subdivision method, terminating program.";
 			exit(1);
 		}
 	}

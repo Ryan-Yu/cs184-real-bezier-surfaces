@@ -8,6 +8,8 @@
 #ifndef BEZIERPATCH_H_
 #define BEZIERPATCH_H_
 
+#include <queue>
+
 class BezierPatch {
 	public:
 		std::vector<std::vector <Eigen::Vector3f> > listOfCurves;
@@ -17,6 +19,9 @@ class BezierPatch {
 
 		// list of differential geometries (i.e. points) that we are evaluating the given patch at
 		std::vector<DifferentialGeometry> listOfDifferentialGeometries;
+
+		// queue of triangles for adaptive triangulation
+		std::queue<Triangle> queueOfTriangles;
 
 	BezierPatch() {
 
@@ -141,22 +146,143 @@ class BezierPatch {
 	// and list of Triangles, based on adaptive subdivision
 	//***************************************************
 	void performAdaptiveSubdivision(float error) {
+
+		listOfDifferentialGeometries.push_back(evaluateDifferentialGeometry(0, 0));
+		listOfDifferentialGeometries.push_back(evaluateDifferentialGeometry(0, 1));
+		listOfDifferentialGeometries.push_back(evaluateDifferentialGeometry(1, 0));
+		listOfDifferentialGeometries.push_back(evaluateDifferentialGeometry(1, 1));
+
+		queueOfTriangles.push(Triangle(listOfDifferentialGeometries[2], listOfDifferentialGeometries[3], listOfDifferentialGeometries[1]));
+		queueOfTriangles.push(Triangle(listOfDifferentialGeometries[3], listOfDifferentialGeometries[2], listOfDifferentialGeometries[4]));
+
+		DifferentialGeometry midpointInterpolatedValueAB;
+		DifferentialGeometry midpointInterpolatedValueBC;
+		DifferentialGeometry midpointInterpolatedValueAC;
+
+		while (!queueOfTriangles.empty()) {
+			std::cout << queueOfTriangles.size() << "\n";
+			Triangle currentTriangleToTest = queueOfTriangles.front();
+			DifferentialGeometry pointA = currentTriangleToTest.point1;
+			DifferentialGeometry pointB = currentTriangleToTest.point2;
+			DifferentialGeometry pointC = currentTriangleToTest.point3;
+			queueOfTriangles.pop();
+
+			bool abSplit = false;
+			bool bcSplit = false;
+			bool acSplit = false;
+
+			// Checking whether A -> B needs to be split
+			Eigen::Vector2f uvValueToInterpolate = (pointA.uvValues + pointB.uvValues)/2.0f;
+			midpointInterpolatedValueAB = evaluateDifferentialGeometry(uvValueToInterpolate.x(), uvValueToInterpolate.y());
+
+			Eigen::Vector3f midpointApproximatedValue = (pointB.position - pointA.position)/2.0f + (pointA.position);
+
+			Eigen::Vector3f errorVector = midpointInterpolatedValueAB.position - midpointApproximatedValue;
+			float errorValue = sqrt(errorVector.dot(errorVector));
+
+			if (errorValue >= error) {
+				abSplit = true;
+			}
+
+			// Checking whether B -> C needs to be split
+			uvValueToInterpolate = (pointB.uvValues + pointC.uvValues)/2.0f;
+			midpointInterpolatedValueBC = evaluateDifferentialGeometry(uvValueToInterpolate.x(), uvValueToInterpolate.y());
+
+			midpointApproximatedValue = (pointC.position - pointB.position)/2.0f + (pointB.position);
+
+			errorVector = midpointInterpolatedValueBC.position - midpointApproximatedValue;
+			errorValue = sqrt(errorVector.dot(errorVector));
+
+			if (errorValue >= error) {
+				bcSplit = true;
+			}
+
+			// Checking whether A -> C needs to be split
+			uvValueToInterpolate = (pointA.uvValues + pointC.uvValues)/2.0f;
+			midpointInterpolatedValueAC = evaluateDifferentialGeometry(uvValueToInterpolate.x(), uvValueToInterpolate.y());
+
+			midpointApproximatedValue = (pointC.position - pointA.position)/2.0f + (pointA.position);
+
+			errorVector = midpointInterpolatedValueAC.position - midpointApproximatedValue;
+			errorValue = sqrt(errorVector.dot(errorVector));
+
+			if (errorValue >= error) {
+				acSplit = true;
+			}
+
+			// Case 1
+			if (!abSplit && !bcSplit && !acSplit) {
+				listOfTriangles.push_back(currentTriangleToTest);
+			}
+			// Case 2
+			else if (!abSplit && !bcSplit && acSplit) {
+				listOfDifferentialGeometries.push_back(midpointInterpolatedValueAC);
+				queueOfTriangles.push(Triangle(pointA, pointB, midpointInterpolatedValueAC));
+				queueOfTriangles.push(Triangle(midpointInterpolatedValueAC, pointB, pointC));
+			}
+			// Case 3
+			else if (abSplit && !bcSplit && !acSplit) {
+				listOfDifferentialGeometries.push_back(midpointInterpolatedValueAB);
+				queueOfTriangles.push(Triangle(pointA, midpointInterpolatedValueAB, pointC));
+				queueOfTriangles.push(Triangle(midpointInterpolatedValueAB, pointB, pointC));
+			}
+			// Case 4
+			else if (!abSplit && bcSplit && !acSplit) {
+				listOfDifferentialGeometries.push_back(midpointInterpolatedValueBC);
+				queueOfTriangles.push(Triangle(pointA, pointB, midpointInterpolatedValueBC));
+				queueOfTriangles.push(Triangle(pointA, midpointInterpolatedValueBC, pointC));
+			}
+			// Case 5
+			else if (abSplit && !bcSplit && acSplit) {
+				listOfDifferentialGeometries.push_back(midpointInterpolatedValueAB);
+				listOfDifferentialGeometries.push_back(midpointInterpolatedValueAC);
+				queueOfTriangles.push(Triangle(pointA, midpointInterpolatedValueAB, midpointInterpolatedValueAC));
+				queueOfTriangles.push(Triangle(midpointInterpolatedValueAC, midpointInterpolatedValueAB, pointC));
+				queueOfTriangles.push(Triangle(midpointInterpolatedValueAB, pointB, pointC));
+			}
+			// Case 6
+			else if (abSplit && bcSplit && !acSplit) {
+				listOfDifferentialGeometries.push_back(midpointInterpolatedValueAB);
+				listOfDifferentialGeometries.push_back(midpointInterpolatedValueBC);
+				queueOfTriangles.push(Triangle(pointA, midpointInterpolatedValueBC, pointC));
+				queueOfTriangles.push(Triangle(pointA, midpointInterpolatedValueAB, midpointInterpolatedValueBC));
+				queueOfTriangles.push(Triangle(midpointInterpolatedValueAB, pointB, midpointInterpolatedValueBC));
+			}
+			// Case 7
+			else if (!abSplit && bcSplit && acSplit) {
+				listOfDifferentialGeometries.push_back(midpointInterpolatedValueAC);
+				listOfDifferentialGeometries.push_back(midpointInterpolatedValueBC);
+				queueOfTriangles.push(Triangle(pointA, pointB, midpointInterpolatedValueAC));
+				queueOfTriangles.push(Triangle(midpointInterpolatedValueAC, pointB, midpointInterpolatedValueBC));
+				queueOfTriangles.push(Triangle(midpointInterpolatedValueAC, midpointInterpolatedValueBC, pointC));
+			}
+			// Case 8
+			else if (abSplit && bcSplit && acSplit) {
+				listOfDifferentialGeometries.push_back(midpointInterpolatedValueAC);
+				listOfDifferentialGeometries.push_back(midpointInterpolatedValueBC);
+				listOfDifferentialGeometries.push_back(midpointInterpolatedValueAB);
+				queueOfTriangles.push(Triangle(pointA, midpointInterpolatedValueAB, midpointInterpolatedValueAC));
+				queueOfTriangles.push(Triangle(midpointInterpolatedValueAB, pointB, midpointInterpolatedValueBC));
+				queueOfTriangles.push(Triangle(midpointInterpolatedValueAC, midpointInterpolatedValueBC, pointC));
+				queueOfTriangles.push(Triangle(midpointInterpolatedValueAC, midpointInterpolatedValueAB, midpointInterpolatedValueBC));
+			}
+		}
 		// Algorithm:
 		//
 		// First, we add the DifferentialGeometries (u,v) = (0,0) , (0,1) , (1,0) , (1,1)
 		// to our BezierPatch's list of differential geometries.
 		//
-		// 1  2
-		// 3  4
+		// 1  3
+		// 2  4
 		//
-		// Next, we add two triangles to our triangle queue: 1-3-2  &  2-3-4
+		// Next, we add two triangles to our triangle queue: 1-2-3  &  4-3-2
 		//
 		// while triangle_queue.is_not_empty:
 		//     current_triangle = triangle_queue.pop();
 		//
-		//     (our triangle now looks like  A--B )
+		//     (our triangle now looks like  A--C )
 		//                                   | /
-		//                                   C
+		//                                   B
 		//
 		//     for each edge (X -> Y) in edges [ (A -> B) ; (A -> C) ; (B -> C) ]:
 		//          first, calculate the (u, v) value of the MIDPOINT of (X -> Y).
