@@ -30,6 +30,10 @@ class DifferentialGeometry {
 		this->normal = normal;
 		this->uvValues = uvValues;
 	}
+
+	DifferentialGeometry(Eigen::Vector3f position) {
+		this->position = position;
+	}
 };
 
 

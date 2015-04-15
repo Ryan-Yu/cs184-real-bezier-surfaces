@@ -57,11 +57,15 @@ public:
 //****************************************************
 Camera camera;
 Viewport viewport;
-string bezFilename;
+string filename;
 string subdivisionMethod;
 float subdivisionParameter;
 int numberOfBezierPatches;
-vector<BezierPatch> listOfBezierPatches;
+std::vector<BezierPatch> listOfBezierPatches;
+
+std::vector<Eigen::Vector3f> objFileVertices;
+std::vector<Triangle> objFileTriangleList;
+bool objMode;
 
 // ***** Display-related global variables ***** //
 
@@ -176,21 +180,10 @@ void myDisplay() {
 	glTranslatef(camera.X_TRANSLATION_AMOUNT, camera.Y_TRANSLATION_AMOUNT, camera.Z_TRANSLATION_AMOUNT);
 
 
-	/*
-	Begin drawing all of the triangles
-	PSUEDOCODE:
 
-	for each BezierPatch in the scene's list of Bezier patches:
-		for each Triangle in the current Bezier patch's list of triangles
-			Grab the three vertices of the triangle and render the triangle
-
-	*/
-
-	// Iterate through each of our BezierPatches...
-	for (std::vector<BezierPatch>::size_type i = 0; i < listOfBezierPatches.size(); i++) {
-		BezierPatch currentBezierPatch = listOfBezierPatches[i];
-		for (std::vector<Triangle>::size_type j = 0; j < currentBezierPatch.listOfTriangles.size(); j++) {
-			Triangle currentTriangleToDraw = currentBezierPatch.listOfTriangles[j];
+	if (objMode) {
+		for (std::vector<Triangle>::size_type j = 0; j < objFileTriangleList.size(); j++) {
+			Triangle currentTriangleToDraw = objFileTriangleList[j];
 
 			DifferentialGeometry point1, point2, point3;
 			point1 = currentTriangleToDraw.point1;
@@ -209,11 +202,8 @@ void myDisplay() {
 				glBegin(GL_POLYGON);
 
 				// Set vertex and normals of all three points of the current triangle
-				glNormal3f(point1.normal.x(), point1.normal.y(), point1.normal.z());
 				glVertex3f(point1.position.x(), point1.position.y(), point1.position.z());
-				glNormal3f(point2.normal.x(), point2.normal.y(), point2.normal.z());
 				glVertex3f(point2.position.x(), point2.position.y(), point2.position.z());
-				glNormal3f(point3.normal.x(), point3.normal.y(), point3.normal.z());
 				glVertex3f(point3.position.x(), point3.position.y(), point3.position.z());
 
 				glEnd();
@@ -237,6 +227,74 @@ void myDisplay() {
 				glVertex3f(point3.position.x(), point3.position.y(), point3.position.z());
 
 				glEnd();
+			}
+		}
+
+
+	} else {
+
+		/*
+		Begin drawing all of the triangles
+		PSUEDOCODE:
+
+		for each BezierPatch in the scene's list of Bezier patches:
+			for each Triangle in the current Bezier patch's list of triangles
+				Grab the three vertices of the triangle and render the triangle
+
+		 */
+
+		// Iterate through each of our BezierPatches...
+		for (std::vector<BezierPatch>::size_type i = 0; i < listOfBezierPatches.size(); i++) {
+			BezierPatch currentBezierPatch = listOfBezierPatches[i];
+			for (std::vector<Triangle>::size_type j = 0; j < currentBezierPatch.listOfTriangles.size(); j++) {
+				Triangle currentTriangleToDraw = currentBezierPatch.listOfTriangles[j];
+
+				DifferentialGeometry point1, point2, point3;
+				point1 = currentTriangleToDraw.point1;
+				point2 = currentTriangleToDraw.point2;
+				point3 = currentTriangleToDraw.point3;
+
+				if (WIREFRAME_MODE) {
+					// Draw objects in wireframe mode
+					glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+
+					glDisable(GL_LIGHTING);
+					glClearColor(0.0, 0.0, 0.0, 0.0);
+					// Default the drawing color to white
+					glColor3f(1.0f, 1.0f, 1.0f);
+
+					glBegin(GL_POLYGON);
+
+					// Set vertex and normals of all three points of the current triangle
+					glNormal3f(point1.normal.x(), point1.normal.y(), point1.normal.z());
+					glVertex3f(point1.position.x(), point1.position.y(), point1.position.z());
+					glNormal3f(point2.normal.x(), point2.normal.y(), point2.normal.z());
+					glVertex3f(point2.position.x(), point2.position.y(), point2.position.z());
+					glNormal3f(point3.normal.x(), point3.normal.y(), point3.normal.z());
+					glVertex3f(point3.position.x(), point3.position.y(), point3.position.z());
+
+					glEnd();
+
+
+				} else {
+					// Draw objects in filled mode
+					glPolygonMode( GL_FRONT, GL_FILL);
+					glPolygonMode( GL_BACK, GL_FILL);
+					glClearColor(0.0, 0.0, 0.0, 0.0);
+					glEnable(GL_LIGHTING);
+
+					glBegin(GL_POLYGON);
+
+					// Set vertex and normals of all three points of the current triangle
+					glNormal3f(point1.normal.x(), point1.normal.y(), point1.normal.z());
+					glVertex3f(point1.position.x(), point1.position.y(), point1.position.z());
+					glNormal3f(point2.normal.x(), point2.normal.y(), point2.normal.z());
+					glVertex3f(point2.position.x(), point2.position.y(), point2.position.z());
+					glNormal3f(point3.normal.x(), point3.normal.y(), point3.normal.z());
+					glVertex3f(point3.position.x(), point3.position.y(), point3.position.z());
+
+					glEnd();
+				}
 			}
 		}
 	}
@@ -381,7 +439,7 @@ void printCommandLineOptionVariables( )
 {
 	if (debug)
 	{
-		cout << "\nBezier file: " << bezFilename << "\n";
+		cout << "\nBezier file: " << filename << "\n";
 		cout << "Subdivision Parameter: " << subdivisionParameter << "\n";
 		cout << "Subdivision Method: " << subdivisionMethod << "\n\n";
 
@@ -565,6 +623,8 @@ void parseBezierFile(string filename) {
 
 	BezierPatch currentBezierPatch;
 
+	bool readyForNextPatch = false;
+
 	while (getline(file, str)) {
 		// If we encounter a new line, then we know that the next 4 consecutive lines represent
 		// 4 curves that will make up a Bezier patch, so we reset our current Bezier patch
@@ -573,8 +633,14 @@ void parseBezierFile(string filename) {
 			currentBezierPatch = BezierPatch();
 			i++;
 			continue;
-
 		}
+
+		if (readyForNextPatch) {
+			readyForNextPatch = false;
+			curvesParsedForCurrentPatch = 0;
+			currentBezierPatch = BezierPatch();
+		}
+
 		j = 0;
 		if (i == 0) {
 			numberOfBezierPatches = stoi(str);
@@ -617,7 +683,9 @@ void parseBezierFile(string filename) {
 
 		// We have parsed all four curves for our current patch
 		if (curvesParsedForCurrentPatch == 4) {
+
 			listOfBezierPatches.push_back(currentBezierPatch);
+			readyForNextPatch = true;
 		}
 
 		i++;
@@ -635,7 +703,105 @@ void parseBezierFile(string filename) {
 
 }
 
+//****************************************************
+// Parsing .OBJ file specified in scene file
+//****************************************************
+void parseObjFile(string filename) {
 
+	string str;
+	ifstream file(filename);
+
+	// The identifier that we're currently parsing
+	string currentlyParsing;
+
+	// current word that we're parsing on a line
+	string currentWord;
+
+	bool validLine = true;
+
+	while (getline(file, str)) {
+		// str represents the current line of the file
+
+		validLine = true;
+		int i = 0;
+		istringstream iss(str);
+		while (iss >> currentWord) {
+
+			// ********** Figure out what the first word of each line is ********** //
+			// We currently support:
+			// (1) v ... (vertex definitions)
+			// (2) f ... (face definitions)
+
+			if ((i == 0) && (currentWord == "v")) {
+				currentlyParsing = currentWord;
+
+			} else if ((i == 0) && (currentWord == "f")) {
+				currentlyParsing = currentWord;
+
+			} else if (i == 0) {
+				currentlyParsing = currentWord;
+				validLine = false;
+			}
+
+			// If the current line is not valid, then just keep skipping every word in the line
+			if (!validLine) {
+				i++;
+				continue;
+			}
+
+			// ********** After we've figured out the first word in each line, parse the rest of the line ********** //
+			// If we've hit here, then we're NOT on the first word of the line anymore
+
+			if (currentlyParsing == "v") {
+				float xCoor, yCoor, zCoor;
+				if (i == 0) { }
+				else if (i == 1) { xCoor = stof(currentWord); }
+				else if (i == 2) { yCoor = stof(currentWord); }
+				else if (i == 3) { zCoor = stof(currentWord); }
+				else if (i > 3) {
+					cerr << "Extra parameters for " << currentlyParsing << ". Ignoring them.\n";
+				}
+				if (i == 3) {
+					objFileVertices.push_back(Eigen::Vector3f(xCoor, yCoor, zCoor));
+				}
+
+			} else if (currentlyParsing == "f") {
+				int vertexIndex1, vertexIndex2, vertexIndex3;
+				if (i == 0) {}
+				else if (i == 1) { vertexIndex1 = stoi(currentWord) - 1; }
+				else if (i == 2) { vertexIndex2 = stoi(currentWord) - 1; }
+				else if (i == 3) { vertexIndex3 = stoi(currentWord) - 1; }
+				else if (i > 3) {
+					cerr << "Extra parameters for " << currentlyParsing << ". Ignoring them.\n";
+				}
+
+				// Push our triangle onto the list of aggregate primitives
+				if (i == 3 && vertexIndex1 < objFileVertices.size() && vertexIndex2 < objFileVertices.size() && vertexIndex3 < objFileVertices.size()) {
+
+						Triangle triangleToAdd = Triangle(
+								DifferentialGeometry(objFileVertices[vertexIndex1]),
+								DifferentialGeometry(objFileVertices[vertexIndex2]),
+								DifferentialGeometry(objFileVertices[vertexIndex3]));
+						objFileTriangleList.push_back(triangleToAdd);
+
+				}
+			}
+
+			i++;
+		}
+	}
+}
+//****************************************************
+// function that determines if full string ends with ending
+//***************************************************
+
+static bool hasEnding (std::string const &fullString, std::string const &ending) {
+    if (fullString.length() >= ending.length()) {
+        return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
+    } else {
+        return false;
+    }
+}
 
 //****************************************************
 // function that parses command line options,
@@ -647,28 +813,37 @@ void parseBezierFile(string filename) {
 void parseCommandLineOptions(int argc, char *argv[])
 {
 
-	if (argc != 3 && argc != 4) {
+	if (argc != 2 && argc != 3 && argc != 4) {
 		cout << "Wrong format for command line input, terminating program.";
 		exit(1);
 	}
 
-	bezFilename = argv[1];
-	subdivisionParameter = stof(argv[2]);
-	if (argc == 3) {
-		subdivisionMethod = "UNIFORM";
-	} else {
-		// We have a fourth command line parameter
-		string subdivisionFlag = argv[3];
-		if (subdivisionFlag == "-a") {
-			subdivisionMethod = "ADAPTIVE";
-		} else {;
+	filename = argv[1];
+	if (argc > 2) {
+		subdivisionParameter = stof(argv[2]);
+		if (argc == 3) {
+			subdivisionMethod = "UNIFORM";
+		} else {
+			// We have a fourth command line parameter
+			string subdivisionFlag = argv[3];
+			if (subdivisionFlag == "-a") {
+				subdivisionMethod = "ADAPTIVE";
+			} else {;
 			// Fourth command line parameter is invalid
 			cout << "Must specify subdivision method, terminating program.";
 			exit(1);
+			}
 		}
 	}
 
-	parseBezierFile(bezFilename);
+	if (hasEnding(filename, ".bez")) {
+		parseBezierFile(filename);
+		objMode = false;
+	} else if (hasEnding(filename, ".obj")) {
+		parseObjFile(filename);
+		objMode = true;
+
+	}
 }
 
 
@@ -688,36 +863,75 @@ void initializeCamera() {
 	xMin = yMin = zMin = numeric_limits<int>::max();
 	xMax = yMax = zMax = numeric_limits<int>::min();
 
-	// Iterate through all BezierPatches...
-	for (std::vector<BezierPatch>::size_type i = 0; i < listOfBezierPatches.size(); i++) {
-		BezierPatch currentBezierPatch = listOfBezierPatches[i];
 
-		// Iterate through each BezierPatch's DifferentialGeometries...
-		for (std::vector<DifferentialGeometry>::size_type j = 0; j < currentBezierPatch.listOfDifferentialGeometries.size(); j++) {
-			Eigen::Vector3f currentDifferentialGeometryPosition = currentBezierPatch.listOfDifferentialGeometries[j].position;
+	if (objMode) {
+		for (std::vector<Triangle>::size_type i = 0; i < objFileTriangleList.size(); i++) {
+			Triangle currentTriangle = objFileTriangleList[i];
+			std::vector<DifferentialGeometry> currentTriangleDifferentialGeometries;
+			currentTriangleDifferentialGeometries.push_back(currentTriangle.point1);
+			currentTriangleDifferentialGeometries.push_back(currentTriangle.point2);
+			currentTriangleDifferentialGeometries.push_back(currentTriangle.point3);
 
-			// Update min's, if applicable
-			if (currentDifferentialGeometryPosition.x() < xMin) {
-				xMin = currentDifferentialGeometryPosition.x();
-			}
-			if (currentDifferentialGeometryPosition.y() < yMin) {
-				yMin = currentDifferentialGeometryPosition.y();
-			}
-			if (currentDifferentialGeometryPosition.z() < zMin) {
-				zMin = currentDifferentialGeometryPosition.z();
-			}
+			for (std::vector<DifferentialGeometry>::size_type j = 0; j < currentTriangleDifferentialGeometries.size(); j++) {
+				Eigen::Vector3f currentDifferentialGeometryPosition = currentTriangleDifferentialGeometries[j].position;
 
-			// Update max's, if applicable
-			if (currentDifferentialGeometryPosition.x() > xMax) {
-				xMax = currentDifferentialGeometryPosition.x();
-			}
-			if (currentDifferentialGeometryPosition.y() > yMax) {
-				yMax = currentDifferentialGeometryPosition.y();
-			}
-			if (currentDifferentialGeometryPosition.z() > zMax) {
-				zMax = currentDifferentialGeometryPosition.z();
-			}
+				// Update min's, if applicable
+				if (currentDifferentialGeometryPosition.x() < xMin) {
+					xMin = currentDifferentialGeometryPosition.x();
+				}
+				if (currentDifferentialGeometryPosition.y() < yMin) {
+					yMin = currentDifferentialGeometryPosition.y();
+				}
+				if (currentDifferentialGeometryPosition.z() < zMin) {
+					zMin = currentDifferentialGeometryPosition.z();
+				}
 
+				// Update max's, if applicable
+				if (currentDifferentialGeometryPosition.x() > xMax) {
+					xMax = currentDifferentialGeometryPosition.x();
+				}
+				if (currentDifferentialGeometryPosition.y() > yMax) {
+					yMax = currentDifferentialGeometryPosition.y();
+				}
+				if (currentDifferentialGeometryPosition.z() > zMax) {
+					zMax = currentDifferentialGeometryPosition.z();
+				}
+			}
+		}
+
+	} else {
+
+		// Iterate through all BezierPatches...
+		for (std::vector<BezierPatch>::size_type i = 0; i < listOfBezierPatches.size(); i++) {
+			BezierPatch currentBezierPatch = listOfBezierPatches[i];
+
+			// Iterate through each BezierPatch's DifferentialGeometries...
+			for (std::vector<DifferentialGeometry>::size_type j = 0; j < currentBezierPatch.listOfDifferentialGeometries.size(); j++) {
+				Eigen::Vector3f currentDifferentialGeometryPosition = currentBezierPatch.listOfDifferentialGeometries[j].position;
+
+				// Update min's, if applicable
+				if (currentDifferentialGeometryPosition.x() < xMin) {
+					xMin = currentDifferentialGeometryPosition.x();
+				}
+				if (currentDifferentialGeometryPosition.y() < yMin) {
+					yMin = currentDifferentialGeometryPosition.y();
+				}
+				if (currentDifferentialGeometryPosition.z() < zMin) {
+					zMin = currentDifferentialGeometryPosition.z();
+				}
+
+				// Update max's, if applicable
+				if (currentDifferentialGeometryPosition.x() > xMax) {
+					xMax = currentDifferentialGeometryPosition.x();
+				}
+				if (currentDifferentialGeometryPosition.y() > yMax) {
+					yMax = currentDifferentialGeometryPosition.y();
+				}
+				if (currentDifferentialGeometryPosition.z() > zMax) {
+					zMax = currentDifferentialGeometryPosition.z();
+				}
+
+			}
 		}
 	}
 
@@ -741,7 +955,6 @@ void initializeCamera() {
 
 	camera.zNear = 1.0f;
 
-	// TODO: Change the multiple to 10.0?
 	camera.zFar = camera.zNear + (10.0f * largestLength);
 }
 
