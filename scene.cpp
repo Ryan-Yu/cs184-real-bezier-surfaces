@@ -77,6 +77,8 @@ bool SMOOTH_SHADING;
 // if false, then in filled mode
 bool WIREFRAME_MODE;
 
+bool HIDDEN_LINE_MODE;
+
 bool debug;
 
 
@@ -91,6 +93,7 @@ void initScene(){
 
 	SMOOTH_SHADING = true;
 	WIREFRAME_MODE = true;
+	HIDDEN_LINE_MODE = false;
 
 	GLfloat ambientColor[] = {0.5f, 0.5f, 0.5f, 1.0f}; //Color(0.2, 0.2, 0.2)
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
@@ -187,23 +190,57 @@ void myDisplay() {
 			std::vector<DifferentialGeometry> currentPolygonToDraw = objFilePolygonList[j];
 
 			if (WIREFRAME_MODE) {
-				// Draw objects in wireframe mode
-				glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+				if (HIDDEN_LINE_MODE) {
+					glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
 
-				glDisable(GL_LIGHTING);
-				glClearColor(0.0, 0.0, 0.0, 0.0);
-				// Default the drawing color to white
-				glColor3f(1.0f, 1.0f, 1.0f);
+					glDisable(GL_LIGHTING);
+					glClearColor(0.0, 0.0, 0.0, 0.0);
+					// Default the drawing color to white
+					glColor3f(1.0f, 1.0f, 1.0f);
 
-				glBegin(GL_POLYGON);
+					glBegin(GL_POLYGON);
 
-				for (std::vector<DifferentialGeometry>::size_type k = 0; k < currentPolygonToDraw.size(); k++) {
-					glVertex3f(currentPolygonToDraw[k].position.x(),
-							currentPolygonToDraw[k].position.y(),
-							currentPolygonToDraw[k].position.z());
+					for (std::vector<DifferentialGeometry>::size_type k = 0; k < currentPolygonToDraw.size(); k++) {
+						glVertex3f(currentPolygonToDraw[k].position.x(),
+								currentPolygonToDraw[k].position.y(),
+								currentPolygonToDraw[k].position.z());
+					}
+
+					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+					glEnable(GL_POLYGON_OFFSET_FILL);
+					glPolygonOffset(1.0, 1.0);
+					glClearColor(0.0, 0.0, 0.0, 0.0);
+					glColor3f(0.0, 0.0, 0.0);
+
+					glBegin(GL_POLYGON);
+					for (std::vector<DifferentialGeometry>::size_type k = 0; k < currentPolygonToDraw.size(); k++) {
+						glVertex3f(currentPolygonToDraw[k].position.x(),
+								currentPolygonToDraw[k].position.y(),
+								currentPolygonToDraw[k].position.z());
+					}
+					glEnd();
+					glDisable(GL_POLYGON_OFFSET_FILL);
+
+
+				} else {
+					// Draw objects in wireframe mode
+					glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+
+					glDisable(GL_LIGHTING);
+					glClearColor(0.0, 0.0, 0.0, 0.0);
+					// Default the drawing color to white
+					glColor3f(1.0f, 1.0f, 1.0f);
+
+					glBegin(GL_POLYGON);
+
+					for (std::vector<DifferentialGeometry>::size_type k = 0; k < currentPolygonToDraw.size(); k++) {
+						glVertex3f(currentPolygonToDraw[k].position.x(),
+								currentPolygonToDraw[k].position.y(),
+								currentPolygonToDraw[k].position.z());
+					}
+
+					glEnd();
 				}
-
-				glEnd();
 
 
 			} else {
@@ -252,25 +289,64 @@ void myDisplay() {
 				point3 = currentTriangleToDraw.point3;
 
 				if (WIREFRAME_MODE) {
-					// Draw objects in wireframe mode
-					glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+					if (HIDDEN_LINE_MODE) {
+						glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
 
-					glDisable(GL_LIGHTING);
-					glClearColor(0.0, 0.0, 0.0, 0.0);
-					// Default the drawing color to white
-					glColor3f(1.0f, 1.0f, 1.0f);
+						glDisable(GL_LIGHTING);
+						glClearColor(0.0, 0.0, 0.0, 0.0);
+						// Default the drawing color to white
+						glColor3f(1.0f, 1.0f, 1.0f);
 
-					glBegin(GL_POLYGON);
+						glBegin(GL_POLYGON);
 
-					// Set vertex and normals of all three points of the current triangle
-					glNormal3f(point1.normal.x(), point1.normal.y(), point1.normal.z());
-					glVertex3f(point1.position.x(), point1.position.y(), point1.position.z());
-					glNormal3f(point2.normal.x(), point2.normal.y(), point2.normal.z());
-					glVertex3f(point2.position.x(), point2.position.y(), point2.position.z());
-					glNormal3f(point3.normal.x(), point3.normal.y(), point3.normal.z());
-					glVertex3f(point3.position.x(), point3.position.y(), point3.position.z());
+						// Set vertex and normals of all three points of the current triangle
+						glNormal3f(point1.normal.x(), point1.normal.y(), point1.normal.z());
+						glVertex3f(point1.position.x(), point1.position.y(), point1.position.z());
+						glNormal3f(point2.normal.x(), point2.normal.y(), point2.normal.z());
+						glVertex3f(point2.position.x(), point2.position.y(), point2.position.z());
+						glNormal3f(point3.normal.x(), point3.normal.y(), point3.normal.z());
+						glVertex3f(point3.position.x(), point3.position.y(), point3.position.z());
 
-					glEnd();
+						glEnd();
+
+						glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+						glEnable(GL_POLYGON_OFFSET_FILL);
+						glPolygonOffset(1.0, 1.0);
+						glClearColor(0.0, 0.0, 0.0, 0.0);
+						glColor3f(0.0, 0.0, 0.0);
+
+						glBegin(GL_POLYGON);
+						glNormal3f(point1.normal.x(), point1.normal.y(), point1.normal.z());
+						glVertex3f(point1.position.x(), point1.position.y(), point1.position.z());
+						glNormal3f(point2.normal.x(), point2.normal.y(), point2.normal.z());
+						glVertex3f(point2.position.x(), point2.position.y(), point2.position.z());
+						glNormal3f(point3.normal.x(), point3.normal.y(), point3.normal.z());
+						glVertex3f(point3.position.x(), point3.position.y(), point3.position.z());
+
+						glEnd();
+						glDisable(GL_POLYGON_OFFSET_FILL);
+
+					} else {
+						// Draw objects in wireframe mode
+						glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+
+						glDisable(GL_LIGHTING);
+						glClearColor(0.0, 0.0, 0.0, 0.0);
+						// Default the drawing color to white
+						glColor3f(1.0f, 1.0f, 1.0f);
+
+						glBegin(GL_POLYGON);
+
+						// Set vertex and normals of all three points of the current triangle
+						glNormal3f(point1.normal.x(), point1.normal.y(), point1.normal.z());
+						glVertex3f(point1.position.x(), point1.position.y(), point1.position.z());
+						glNormal3f(point2.normal.x(), point2.normal.y(), point2.normal.z());
+						glVertex3f(point2.position.x(), point2.position.y(), point2.position.z());
+						glNormal3f(point3.normal.x(), point3.normal.y(), point3.normal.z());
+						glVertex3f(point3.position.x(), point3.position.y(), point3.position.z());
+
+						glEnd();
+					}
 
 
 				} else {
@@ -338,6 +414,18 @@ void keyPressed( unsigned char key, int x, int y )
 				cout << "Turned wireframe mode ON.\n";
 			} else {
 				cout << "Turned wireframe mode OFF.\n";
+			}
+		}
+		break;
+
+	case 'h':
+		// Toggle between filled and hidden-line mode
+		HIDDEN_LINE_MODE = !HIDDEN_LINE_MODE;
+		if (debug) {
+			if (HIDDEN_LINE_MODE) {
+				cout << "Turned hidden line mode ON.\n";
+			} else {
+				cout << "Turned hidden line mode OFF.\n";
 			}
 		}
 		break;
