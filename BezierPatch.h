@@ -9,6 +9,10 @@
 #define BEZIERPATCH_H_
 
 #include <queue>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <map>
 
 class BezierPatch {
 	public:
@@ -41,6 +45,9 @@ class BezierPatch {
 	void addDifferentialGeometry(Eigen::Vector3f position, Eigen::Vector3f normal, Eigen::Vector2f uvValues) {
 		listOfDifferentialGeometries.push_back(DifferentialGeometry(position, normal, uvValues));
 	}
+
+
+
 
 
 	//****************************************************
@@ -134,7 +141,6 @@ class BezierPatch {
 
 		// Take cross product of partials to find normal
 		Eigen::Vector3f normal = finalUCurve.derivative.cross(finalVCurve.derivative);
-//		Eigen::Vector3f normal = finalVCurve.derivative.cross(finalUCurve.derivative);
 		normal.normalize();
 
 		return DifferentialGeometry(finalUCurve.point, normal, Eigen::Vector2f(u, v));

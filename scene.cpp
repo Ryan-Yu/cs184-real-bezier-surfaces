@@ -64,8 +64,10 @@ int numberOfBezierPatches;
 std::vector<BezierPatch> listOfBezierPatches;
 
 std::vector<Eigen::Vector3f> objFileVertices;
-std::vector<Triangle> objFileTriangleList;
+std::vector<std::vector<DifferentialGeometry> > objFilePolygonList;
 bool objMode;
+string objFilenameOutput;
+bool WRITE_OBJ;
 
 // ***** Display-related global variables ***** //
 
@@ -94,14 +96,14 @@ void initScene(){
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
 
 	//Add directed light
-	GLfloat lightColor1[] = {0.5f, 0.2f, 0.8f, 1.0f}; //Color (0.5, 0.2, 0.2)
+	GLfloat lightColor1[] = {0.6f, 0.5f, 0.4f, 1.0f}; //Color (0.5, 0.2, 0.2)
 	//Coming from the direction (-1, 0.5, 0.5)
 	GLfloat lightPos1[] = {-10.0f, 5.5f, 8.5f, 0.0f};
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor1);
 	glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);
 
 	//Add positioned light
-	GLfloat lightColor0[] = {0.5f, 0.5f, 0.5f, 1.0f}; //Color (0.5, 0.5, 0.5)
+	GLfloat lightColor0[] = {0.6f, 0.55f, 0.55f, 1.0f}; //Color (0.5, 0.5, 0.5)
 	GLfloat lightPos0[] = {4.0f, 0.0f, 8.0f, 1.0f}; //Positioned at (4, 0, 8)
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor0);
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPos0);
@@ -110,6 +112,7 @@ void initScene(){
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
 	glEnable(GL_DEPTH_TEST);
+//	glEnable(GL_CULL_FACE);
 
 }
 
@@ -179,16 +182,9 @@ void myDisplay() {
 	// Handle translations
 	glTranslatef(camera.X_TRANSLATION_AMOUNT, camera.Y_TRANSLATION_AMOUNT, camera.Z_TRANSLATION_AMOUNT);
 
-
-
 	if (objMode) {
-		for (std::vector<Triangle>::size_type j = 0; j < objFileTriangleList.size(); j++) {
-			Triangle currentTriangleToDraw = objFileTriangleList[j];
-
-			DifferentialGeometry point1, point2, point3;
-			point1 = currentTriangleToDraw.point1;
-			point2 = currentTriangleToDraw.point2;
-			point3 = currentTriangleToDraw.point3;
+		for (std::vector<std::vector<DifferentialGeometry> >::size_type j = 0; j < objFilePolygonList.size(); j++) {
+			std::vector<DifferentialGeometry> currentPolygonToDraw = objFilePolygonList[j];
 
 			if (WIREFRAME_MODE) {
 				// Draw objects in wireframe mode
@@ -201,10 +197,11 @@ void myDisplay() {
 
 				glBegin(GL_POLYGON);
 
-				// Set vertex and normals of all three points of the current triangle
-				glVertex3f(point1.position.x(), point1.position.y(), point1.position.z());
-				glVertex3f(point2.position.x(), point2.position.y(), point2.position.z());
-				glVertex3f(point3.position.x(), point3.position.y(), point3.position.z());
+				for (std::vector<DifferentialGeometry>::size_type k = 0; k < currentPolygonToDraw.size(); k++) {
+					glVertex3f(currentPolygonToDraw[k].position.x(),
+							currentPolygonToDraw[k].position.y(),
+							currentPolygonToDraw[k].position.z());
+				}
 
 				glEnd();
 
@@ -218,13 +215,13 @@ void myDisplay() {
 
 				glBegin(GL_POLYGON);
 
-				// Set vertex and normals of all three points of the current triangle
-				glNormal3f(point1.normal.x(), point1.normal.y(), point1.normal.z());
-				glVertex3f(point1.position.x(), point1.position.y(), point1.position.z());
-				glNormal3f(point2.normal.x(), point2.normal.y(), point2.normal.z());
-				glVertex3f(point2.position.x(), point2.position.y(), point2.position.z());
-				glNormal3f(point3.normal.x(), point3.normal.y(), point3.normal.z());
-				glVertex3f(point3.position.x(), point3.position.y(), point3.position.z());
+				// TODO: Account for normals in non-wireframe mode
+				for (std::vector<DifferentialGeometry>::size_type k = 0; k < currentPolygonToDraw.size(); k++) {
+					glVertex3f(currentPolygonToDraw[k].position.x(),
+							currentPolygonToDraw[k].position.y(),
+							currentPolygonToDraw[k].position.z());
+				}
+
 
 				glEnd();
 			}
@@ -576,6 +573,39 @@ void perform_subdivision(bool adaptive_subdivision) {
 
 
 //****************************************************
+// Writes an .obj file that represents this BezierPatch
+//***************************************************
+void generateObjFile(std::string filename) {
+	std::ofstream myfile;
+	myfile.open(filename);
+
+	std::vector<Triangle> aggregateTriangleList;
+	for (std::vector<BezierPatch>::size_type i = 0; i < listOfBezierPatches.size(); i++) {
+		for (std::vector<Triangle>::size_type j = 0; j < listOfBezierPatches[i].listOfTriangles.size(); j++) {
+			aggregateTriangleList.push_back(listOfBezierPatches[i].listOfTriangles[j]);
+		}
+	}
+
+	// Generate all vertex lines in file
+	for (std::vector<Triangle>::size_type i = 0; i < aggregateTriangleList.size(); i++) {
+		DifferentialGeometry point1 = aggregateTriangleList[i].point1;
+		DifferentialGeometry point2 = aggregateTriangleList[i].point2;
+		DifferentialGeometry point3 = aggregateTriangleList[i].point3;
+
+		myfile << "v " << point1.position.x() << " " << point1.position.y() << " " << point1.position.z() << "\n";
+		myfile << "v " << point2.position.x() << " " << point2.position.y() << " " << point2.position.z() << "\n";
+		myfile << "v " << point3.position.x() << " " << point3.position.y() << " " << point3.position.z() << "\n";
+	}
+
+
+	for (std::vector<Triangle>::size_type i = 0; i < aggregateTriangleList.size(); i++) {
+		myfile << "f " << (3 * i) + 1 << " " << (3 * i) + 2 << " " << (3 * i) + 3 << "\n";
+	}
+}
+
+
+
+//****************************************************
 // function that parses an input .bez file and initializes
 // a list of Bezier patches
 //
@@ -701,6 +731,11 @@ void parseBezierFile(string filename) {
 		exit(1);
 	}
 
+	// We want to write our Bezier patches to an .obj file
+	if (WRITE_OBJ) {
+		generateObjFile(objFilenameOutput);
+	}
+
 }
 
 //****************************************************
@@ -724,6 +759,9 @@ void parseObjFile(string filename) {
 
 		validLine = true;
 		int i = 0;
+
+		std::vector<DifferentialGeometry> currentPolygonPoints;
+
 		istringstream iss(str);
 		while (iss >> currentWord) {
 
@@ -766,28 +804,26 @@ void parseObjFile(string filename) {
 				}
 
 			} else if (currentlyParsing == "f") {
-				int vertexIndex1, vertexIndex2, vertexIndex3;
-				if (i == 0) {}
-				else if (i == 1) { vertexIndex1 = stoi(currentWord) - 1; }
-				else if (i == 2) { vertexIndex2 = stoi(currentWord) - 1; }
-				else if (i == 3) { vertexIndex3 = stoi(currentWord) - 1; }
-				else if (i > 3) {
-					cerr << "Extra parameters for " << currentlyParsing << ". Ignoring them.\n";
+
+
+				if (i == 0) {
+					i++;
+					continue;
+				}
+				int currentIndexOfVertex = stoi(currentWord) - 1;
+
+				if (currentIndexOfVertex < objFileVertices.size()) {
+					currentPolygonPoints.push_back(DifferentialGeometry(objFileVertices[currentIndexOfVertex]));
 				}
 
-				// Push our triangle onto the list of aggregate primitives
-				if (i == 3 && vertexIndex1 < objFileVertices.size() && vertexIndex2 < objFileVertices.size() && vertexIndex3 < objFileVertices.size()) {
-
-						Triangle triangleToAdd = Triangle(
-								DifferentialGeometry(objFileVertices[vertexIndex1]),
-								DifferentialGeometry(objFileVertices[vertexIndex2]),
-								DifferentialGeometry(objFileVertices[vertexIndex3]));
-						objFileTriangleList.push_back(triangleToAdd);
-
-				}
 			}
 
 			i++;
+		}
+
+		// Finished parsing current line
+		if (currentlyParsing == "f") {
+			objFilePolygonList.push_back(currentPolygonPoints);
 		}
 	}
 }
@@ -812,37 +848,52 @@ static bool hasEnding (std::string const &fullString, std::string const &ending)
 //***************************************************
 void parseCommandLineOptions(int argc, char *argv[])
 {
+	subdivisionMethod = "UNIFORM";
+	string flag;
 
-	if (argc != 2 && argc != 3 && argc != 4) {
-		cout << "Wrong format for command line input, terminating program.";
-		exit(1);
-	}
+	int i = 1;
+	while (i <= argc - 1) {
+		flag = argv[i];
 
-	filename = argv[1];
-	if (argc > 2) {
-		subdivisionParameter = stof(argv[2]);
-		if (argc == 3) {
-			subdivisionMethod = "UNIFORM";
-		} else {
-			// We have a fourth command line parameter
-			string subdivisionFlag = argv[3];
-			if (subdivisionFlag == "-a") {
-				subdivisionMethod = "ADAPTIVE";
-			} else {;
-			// Fourth command line parameter is invalid
-			cout << "Must specify subdivision method, terminating program.";
-			exit(1);
+		if (i == 1) {
+			filename = flag;
+			if (hasEnding(flag, ".bez")) {
+				objMode = false;
+			} else if (hasEnding(flag, ".obj")) {
+				objMode = true;
+			} else {
+				std::cout << "Unrecognized input file format.";
+				exit(1);
 			}
+		} else if (i == 2) {
+			subdivisionParameter = stof(flag);
+		} else if (flag == "-o") {
+			if ((i + 1) > (argc - 1))
+			{
+				std::cout << "Invalid number of parameters for -o.";
+				exit(1);
+			}
+			if (!objMode) {
+				WRITE_OBJ = true;
+				objFilenameOutput = argv[i+1];
+			} else {
+				std::cout << "Error: cannot write to .obj file if in .obj mode.";
+				exit(1);
+			}
+			i += 1;
 		}
+
+		if (i == 3 && flag == "-a") {
+			subdivisionMethod = "ADAPTIVE";
+		}
+
+		i++;
 	}
 
 	if (hasEnding(filename, ".bez")) {
 		parseBezierFile(filename);
-		objMode = false;
 	} else if (hasEnding(filename, ".obj")) {
 		parseObjFile(filename);
-		objMode = true;
-
 	}
 }
 
@@ -865,15 +916,11 @@ void initializeCamera() {
 
 
 	if (objMode) {
-		for (std::vector<Triangle>::size_type i = 0; i < objFileTriangleList.size(); i++) {
-			Triangle currentTriangle = objFileTriangleList[i];
-			std::vector<DifferentialGeometry> currentTriangleDifferentialGeometries;
-			currentTriangleDifferentialGeometries.push_back(currentTriangle.point1);
-			currentTriangleDifferentialGeometries.push_back(currentTriangle.point2);
-			currentTriangleDifferentialGeometries.push_back(currentTriangle.point3);
+		for (std::vector<std::vector<DifferentialGeometry> >::size_type i = 0; i < objFilePolygonList.size(); i++) {
+			std::vector<DifferentialGeometry> currentPolygon = objFilePolygonList[i];
 
-			for (std::vector<DifferentialGeometry>::size_type j = 0; j < currentTriangleDifferentialGeometries.size(); j++) {
-				Eigen::Vector3f currentDifferentialGeometryPosition = currentTriangleDifferentialGeometries[j].position;
+			for (std::vector<DifferentialGeometry>::size_type j = 0; j < currentPolygon.size(); j++) {
+				Eigen::Vector3f currentDifferentialGeometryPosition = currentPolygon[j].position;
 
 				// Update min's, if applicable
 				if (currentDifferentialGeometryPosition.x() < xMin) {
@@ -1008,6 +1055,7 @@ int main(int argc, char *argv[]) {
 
 	// Turns debug mode ON or OFF
 	debug = true;
+	WRITE_OBJ = false;
 
 	// This initializes glut
 	glutInit(&argc, argv);
