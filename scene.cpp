@@ -370,8 +370,6 @@ void keyPressed( unsigned char key, int x, int y )
 		break;
 	}
 
-	// TODO: shift + arrow keys = object translated (need to use special key for this, probably)
-
 }
 
 
@@ -1103,11 +1101,3 @@ int main(int argc, char *argv[]) {
 
 	return 0;
 }
-
-
-
-
-
-
-
-
